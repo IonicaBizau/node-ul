@@ -9,6 +9,8 @@ var obj = {
       , v: 10
       , a: 20
     }
+  , tmp = null
   ;
 
-console.log(Ul.merge(def, obj));
+console.log(tmp = Ul.merge(def, obj));
+console.log(tmp === Ul.clone(tmp));
