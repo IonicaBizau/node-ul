@@ -11,4 +11,4 @@ var obj = {
     }
   ;
 
-console.log(Ul.merge(obj, def));
+console.log(Ul.merge(def, obj));
