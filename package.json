@@ -1,0 +1,24 @@
+{
+  "name": "ul",
+  "version": "1.0.0",
+  "description": "A minimalist utility library.",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "node test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:IonicaBizau/node-ul.git"
+  },
+  "keywords": [
+    "util",
+    "nodejs",
+    "minimalist"
+  ],
+  "author": "Ionică Bizău <bizauionica@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/IonicaBizau/node-ul/issues"
+  },
+  "homepage": "https://github.com/IonicaBizau/node-ul"
+}
