@@ -14,3 +14,4 @@ var obj = {
 
 console.log(tmp = Ul.merge(def, obj));
 console.log(tmp === Ul.clone(tmp));
+console.log(Ul.USER_DIR);

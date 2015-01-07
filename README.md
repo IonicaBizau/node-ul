@@ -47,6 +47,9 @@ Deep clone of the provided item.
 ### Return
 - **Anything** The cloned object
 
+## `USER_DIR`
+ - Is a string representing the absolute path to the user directory.
+
 # How to contribute
 
 1. File an issue in the repository, using the bug tracker, describing the
