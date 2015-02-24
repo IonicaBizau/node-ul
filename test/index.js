@@ -19,3 +19,4 @@ console.log(Ul.USER_DIR);
 console.log(Ul.merge({}, obj, def, last));
 console.log(Ul.merge({ a: { c: {}, d: 3 } }, { a: {d: undefined, c: {s: {}}} }));
 console.log(Ul.merge({ a: 4, b: 1 }, { b: 2, c: 3 }));
+console.log(Ul.merge({ a: 4, b: 1, d: { a: { b: [{ a: "foo" }] } } }, { b: 2, c: 3, d: { a: { b: [] } } }));
