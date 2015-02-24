@@ -27,13 +27,8 @@ console.log(tmp === Ul.clone(tmp));
 ```
 
 # Documentation
-## `merge(obj1, obj2)`
-Merges two objects. The second parameter has higher priority.
-That means the defaults will be passed in the first parameter.
-
-### Params
-- **Object** `obj1`: The first object.
-- **Object** `obj2`: The second object.
+## `merge(/* obj1, obj2, obj3, ..., objN*/)`
+Recursively merge the objects from arguments, returning a new object.
 
 ### Return
 - **Object** The merged objects.
