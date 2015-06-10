@@ -4,7 +4,7 @@
   "description": "A minimalist utility library.",
   "main": "lib/index.js",
   "scripts": {
-    "test": "node test"
+    "test": "mocha test"
   },
   "repository": {
     "type": "git",
@@ -24,5 +24,10 @@
   "directories": {
     "example": "example",
     "test": "test"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "mocha": "^2.2.5",
+    "is-there": "^3.0.0"
   }
 }
