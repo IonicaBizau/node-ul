@@ -28,6 +28,6 @@
   "dependencies": {},
   "devDependencies": {
     "mocha": "^2.2.5",
-    "is-there": "^3.0.0"
+    "is-there": "^4.0.0"
   }
 }
