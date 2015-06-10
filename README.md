@@ -62,10 +62,10 @@ console.log(Ul.home()); // or `console.log(Ul.HOME_DIR);`
 ### `merge()`
 Recursively merge the objects from arguments, returning a new object.
 
+Usage: `Ul.merge(obj1, obj2, obj3, obj4, ..., objN)`
+
 #### Return
 - **Object** The merged objects.
-
-obj1, obj2, obj3, ..., objn
 
 ### `clone(item)`
 Deep clone of the provided item.
