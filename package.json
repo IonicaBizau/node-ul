@@ -20,5 +20,9 @@
   "bugs": {
     "url": "https://github.com/IonicaBizau/node-ul/issues"
   },
-  "homepage": "https://github.com/IonicaBizau/node-ul"
+  "homepage": "https://github.com/IonicaBizau/node-ul",
+  "directories": {
+    "example": "example",
+    "test": "test"
+  }
 }
