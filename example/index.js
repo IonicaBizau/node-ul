@@ -22,3 +22,7 @@ console.log(tmp = Ul.merge(obj, def));
 // different reference
 console.log(tmp === Ul.clone(tmp));
 // => false
+
+// Show the absolute path to the home directory
+console.log(Ul.home()); // or `console.log(Ul.HOME_DIR);`
+// => /home/ionicabizau
