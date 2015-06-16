@@ -43,7 +43,7 @@ var obj = {
   ;
 
 // Merge the two objects and store the result in tmp
-console.log(tmp = Ul.merge(obj, def));
+console.log(tmp = Ul.deepMerge(obj, def));
 // => { n: null, v: 1, a: 20 }
 
 // Clone the tmp object -- the clone will have a
@@ -55,14 +55,37 @@ console.log(tmp === Ul.clone(tmp));
 console.log(Ul.home()); // or `console.log(Ul.HOME_DIR);`
 // => /home/ionicabizau
 
+// One level merge
+console.log(Ul.merge({
+    foo: {
+        bar: 42
+    }
+}, {
+    foo: {
+        bar: 1
+      , baz: 7
+    }
+});
+// => { { bar: 42 } }
+
 ```
 
 ## Documentation
 
-### `merge()`
+### `merge(dst, src)`
+One level merge. Faster than `deepMerge`.
+
+#### Params
+- **** `dst`: {Object} The destination object.
+- **** `src`: {Object} The source object (usually defaults).
+
+#### Return
+- **Object** The result object.
+
+### `deepMerge()`
 Recursively merge the objects from arguments, returning a new object.
 
-Usage: `Ul.merge(obj1, obj2, obj3, obj4, ..., objN)`
+Usage: `Ul.deepMerge(obj1, obj2, obj3, obj4, ..., objN)`
 
 #### Return
 - **Object** The merged objects.
