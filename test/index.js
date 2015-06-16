@@ -20,7 +20,7 @@ var obj = {
 
 // One level objects
 it("should merge one level objects", function (cb) {
-    tmp = Ul.merge(obj, def);
+    tmp = Ul.deepMerge(obj, def);
     Assert.deepEqual(tmp, {
         n: null
       , v: 1
@@ -44,7 +44,7 @@ it("should get the correct path to the home directory", function (cb) {
 
 // Multiple objects merge
 it("should merge more than two objects", function (cb) {
-    Assert.deepEqual(Ul.merge({}, obj, def, last), {
+    Assert.deepEqual(Ul.deepMerge({}, obj, def, last), {
         c: 1
       , n: null
       , v: 1
@@ -55,7 +55,7 @@ it("should merge more than two objects", function (cb) {
 
 // Deep merge
 it("should merge objects deeply", function (cb) {
-    Assert.deepEqual(Ul.merge({
+    Assert.deepEqual(Ul.deepMerge({
         a: {
             c: {}
           , d: 3
@@ -80,7 +80,7 @@ it("should merge objects deeply", function (cb) {
 
 // Merge arrays
 it("should merge arrays", function (cb) {
-    Assert.deepEqual(Ul.merge({
+    Assert.deepEqual(Ul.deepMerge({
         a: 4
       , b: 1
       , d: {
@@ -103,6 +103,23 @@ it("should merge arrays", function (cb) {
             }
         }
       , a: 4
+    });
+    cb();
+});
+
+// One level merge
+it("should merge one level objects", function (cb) {
+    Assert.deepEqual(Ul.merge({
+        foo: {
+            bar: 42
+        }
+    }, {
+        foo: {
+            bar: 1
+          , baz: 7
+        }
+    }), {
+        foo: { bar: 42 }
     });
     cb();
 });

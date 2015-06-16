@@ -26,7 +26,8 @@
     "test": "test"
   },
   "dependencies": {
-    "typpy": "2.0.0"
+    "typpy": "2.0.0",
+    "deffy": "2.0.0"
   },
   "devDependencies": {
     "mocha": "^2.2.5",
