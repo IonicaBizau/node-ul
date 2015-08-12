@@ -1,0 +1,551 @@
+
+Syntax
+
+
+power_lineparam
+LDATA = power_lineparam('new')
+LDATA = power_lineparam(LDATA)
+LDATA = power_lineparam('MYLINEDATA')
+power_lineparam(LDATA,'BLK')
+power_lineparam('MYLINEDATA','BLK')
+
+
+
+
+Description
+
+power_lineparam opens a graphical user interface (GUI) to enter the line parameters and return the electrical R, L, and C line parameters. You can also activate this GUI from the Powergui block dialog box by selecting Compute RLC Line Parameters.
+
+LDATA = power_lineparam('new') returns a structure variable with default line geometry parameters. You can use LDATA as a template variable to configure a new line geometry and to compute RLC line parameters.
+
+LDATA = power_lineparam(LDATA) computes the RLC line parameters for the geometric line parameters in the LDATA structure. The returned structure contains both geometric data and computed RLC line parameters. 
+
+LDATA = power_lineparam('MYLINEDATA') computes the RLC line parameters for the geometric line parameters in the specified file. 'MYLINEDATA' is the name of a MAT file. The MAT file must contain a structure variable of the same format as LDATA variable, or you can generate it using the function GUI. 
+
+power_lineparam(LDATA,'BLK') power_lineparam('MYLINEDATA','BLK') uploads the RLC line parameters in the specified PI Section Line, PI Section Cable, Distributed Parameters Line, or Three-Phase PI Section Line block. 'BLK' is a block path name. 
+
+The power_lineparam function computes the resistance, inductance, and capacitance matrices of an arbitrary arrangement of conductors of an overhead transmission line. For a three-phase line, the symmetrical component RLC values are also computed. 
+
+The following figure shows a typical conductor arrangement for a three-phase double-circuit line. This line configuration illustrates the various line parameters you enter in the GUI.
+
+Configuration of a Three-Phase Double-Circuit Line
+
+
+
+For a set of N conductors, power_lineparam computes three N-by-N matrices: the series resistance and inductance matrices [R] and [L] and the shunt capacitance matrix [C]. These matrices are required by the Distributed Parameter Line block for modeling N-phase asymmetrical lines and by the single-phase PI Section Line block. power_lineparam also computes the symmetrical component RLC parameters required by the Three-Phase PI Section Line block. For two coupled conductors i and k, the self and mutual terms of the R, L, and C matrices are computed using the concept of image conductors [1] 
+
+
+
+Self and mutual resistance terms:
+
+Rii=Rint+ΔRiiΩ/km
+
+Rik=ΔRikΩ/km
+
+Self and mutual inductance terms:
+
+Lii=Lint+μ02π⋅log2hiri+ΔLiiH/km
+
+Lik=μ02π⋅logDikdik+ΔLikH/km
+
+Self and mutual potential coefficients terms:
+
+Pii=12πε0⋅log2hirikm/F
+
+Pik=12πε0⋅logDikdikkm/F
+
+[C]=[P]−1F/km
+
+µ0: permeability of free space = 4π.10−4 H/km 
+ɛ0: permittivity of free space = 8.8542.10−9 F/km 
+ri: radius of conductor i in meters 
+dik: distance between conductors i and k in meters 
+Dik: distance between conductor i and image of k in meters 
+hi= average height of conductor i above ground, in meters 
+Rint, Lint: internal resistance and inductance of conductor 
+ΔRii, ΔRik: Carson R correction terms due to ground resistivity 
+ΔLii, ΔLik: Carson L correction terms due to ground resistivity
+
+The conductor self-inductance is computed from the magnetic flux circulating inside and outside the conductor, and produced by the current flowing in the conductor itself. The part of flux circulating inside the conducting material contributes to the internal inductance Lint, which is dependent on the conductor geometry. Assuming a hollow or solid conductor, the internal inductance is computed from the T/D ratio where D is the conductor diameter and T is the thickness of the conducting material (see the figure Configuration of a Three-Phase Double-Circuit Line). The conductor self-inductance is computed by means of modified Bessel functions from the conductor diameter, T/D ratio, resistivity, and relative permeability of conducting material and specified frequency [1].
+
+The conductor self-inductance can be also computed from parameters that are usually found in tables provided by conductor manufacturers: the Geometric Mean Radius (GMR)  or the "Reactance at one-foot spacing."
+
+The GMR is the radius of the equivalent hollow conductor with zero thickness, producing no internal flux, giving the same self-inductance. The conductor self-inductance is then derived from the GMR using the following equation.
+
+Lii=μ02π⋅log2hiGMR+ΔLiiH/km
+
+For a solid conductor (T/D=0.5), the GMR is
+
+GMR=r⋅e−μr/4
+
+r = radius of conductor 
+μr = relative permeability of conducting material 
+
+The GMR obtained from this equation assumes a uniform current density in the conductor. This assumption is strictly valid in DC. In AC, the GMR is slightly higher. For example, for a 3 cm diameter solid aluminum conductor (Rdc = 0.040 Ω/km), the GMR increases from 1.1682 cm in DC to 1.1784 cm at 60 Hz. Manufacturers usually give the GMR at the system nominal frequency (50 Hz or 60 Hz).
+
+The reactance Xa at 1-foot spacing (or 1-meter spacing if metric units are used) is the positive-sequence reactance of a three-phase line having one foot (or one meter) spacing between the three phases and infinite conductor heights. The reactance at one-foot spacing (or 1-meter spacing) at frequency f is related to the GMR by the following equation:
+
+Xa=ω⋅μ02π⋅log1GMRΩ/km
+
+GMR = Geometric Mean Radius in feet or meters 
+ω = 2π.f in rad/s 
+f = frequency in hertz 
+
+The conductor resistance matrix at a particular frequency depends on the DC resistance of the conductor corrected for skin effect and ground resistivity. Both the resistance matrix and the inductance matrix are dependent on the ground resistivity and frequency. Correction terms for the R and L terms as developed by J.R. Carson in 1926 [2] are implemented in power_lineparam.
+
+
+Line Parameters GUI
+
+When you type the power_lineparam command, the GUI is displayed.
+
+
+
+The default parameters are for a single-circuit three-phase line with two ground wires. You enter your own line parameters in three different sections:
+•
+The upper-left section where you enter general parameters (units, frequency, ground resistivity, and comments)
+
+•
+The table of conductor types defining the conductor characteristics for each type (bottom section)
+
+•
+The table of conductors specifying the line geometry and the conductor types (upper-right section)
+
+Units
+In the drop-down list, select metric if you want to specify conductor diameter, GMR, and bundle diameter in centimeters and conductor positions in meters. Select english if you want to specify conductor diameter, GMR, and bundle diameter in inches and conductor positions in feet.
+Frequency
+Specify the frequency in hertz to evaluate RLC parameters.
+Ground resistivity
+Specify the ground resistivity in ohm.meters. A zero value (perfectly conducting ground) is allowed. 
+Comments
+Use this text box to type comments that you want to save with the line parameters, for example, voltage level, conductor types and characteristics, etc. 
+Number of conductor types
+Specify the number of conductor types (single conductor or bundle of subconductors). This parameter determines the number of rows of the table of conductors types. The phase conductors and ground wires can be either single conductors or bundles of subconductors. For voltage levels of 230 kV and higher, phase conductors are usually bundled to reduce losses and electromagnetic interferences due to corona effect. Ground wires are usually not bundled.
+
+For a simple AC three-phase line, single- or double-circuit, there are usually two types of conductors: one type for the phase conductors and one type for the ground wires. You need more than two types for several lines in the same corridor, DC bipolar lines or distribution feeders, where neutral and sheaths of TV and telephone cables are represented.
+Conductor internal inductance evaluated from
+Select one of the following three parameters to specify how the conductor internal inductance is computed: T/D ratio, Geometric Mean Radius (GMR), or Reactance Xa at 1-foot spacing (or 1-meter spacing if the Units parameter is set to metric).
+
+If you select T/D ratio, the internal inductance is computed from the T/D value specified in the table of conductors, assuming a hollow or solid conductor. D is the conductor diameter and T is the thickness of the conducting material (see the figure Configuration of a Three-Phase Double-Circuit Line). The conductor self-inductance and resistance are computed from the conductor diameter, T/D ratio, DC resistance, and relative permeability of conducting material and specified frequency.
+
+If you select Geometric Mean Radius (GMR), the conductor GMR evaluates the internal inductance. When the conductor inductance is evaluated from the GMR, the specified frequency does not affect the conductor inductance. You must provide the manufacturer's GMR for the desired frequency (usually 50 Hz or 60 Hz). When you are using the T/D ratio option, the corresponding conductor GMR at the specified frequency is displayed.
+
+Selecting Reactance Xa at 1-foot spacing (or 1-meter spacing) uses the positive-sequence reactance at the specified frequency of a three-phase line having 1-foot (or 1-meter) spacing between the three phases to compute the conductor internal inductance.
+Include conductor skin effect
+Select this check box to include the impact of frequency on conductor AC resistance and inductance (skin effect). If this parameter is not selected, the resistance is kept constant at the value specified by the Conductor DC resistance  parameter and the inductance is kept constant at the value computed in DC, using the Conductor outside diameter and the conductor T/D ratio. When skin effect is included, the conductor AC resistance and inductance are evaluated considering a hollow conductor with T/D ratio (or solid conductor if T/D = 0.5). The T/D ratio evaluates the AC resistance even if the conductor inductance is evaluated from the GMR or from the reactance at one-foot spacing or one-meter spacing. The ground skin effect is always considered and it depends on the ground resistivity.
+Conductor (bundle) type
+Lists the conductor or bundle types by increasing number, starting from 1 and ending at the value specified in the parameter Number of conductor types. You cannot change this value.
+Conductor outside diameter
+Specify the conductor outside diameter in centimeters or inches.
+Conductor T/D ratio
+Specify the T/D ratio of the hollow conductor. T is the thickness of conducting material and D is the outside diameter. This parameter can vary between 0 and 0.5. A T/D value of 0.5 indicates a solid conductor. For Aluminum Cable Steel Reinforced (ACSR) conductors, you can ignore the steel core and consider a hollow aluminum conductor (typical T/D ratios comprised between 0.3 and 0.4). The T/D ratio is used to compute the conductor AC resistance when the Include conductor skin effect parameter is selected. It is also used to compute the conductor self-inductance when the parameter Conductor internal inductance evaluated from is set to T/D ratio. 
+Conductor GMR
+This parameter is accessible only when the parameter Conductor internal inductance evaluated from is set to Geometric Mean Radius (GMR). Specify the GMR in centimeters or inches. The GMR at 60 Hz or 50 Hz is usually provided by conductor manufacturers. When the parameter Conductor internal inductance evaluated from is set to T/D ratio, the value of the corresponding GMR giving the same conductor inductance is displayed. When the parameter Conductor internal inductance evaluated from is set to Reactance Xa at 1-foot spacing or (1-meter spacing), the title of the column changes to the parameter name.
+Reactance Xa at 1-meter spacing (1-foot spacing)
+This parameter is accessible only when Conductor internal inductance specified from is set to Reactance Xa at 1-meter spacing or (1-foot spacing). Specify the Xa value in ohms/km or ohms/mile at the specified frequency. The Xa value at 60 Hz or 50 Hz is usually provided by conductor manufacturers.
+Conductor DC resistance
+Specify the DC resistance of conductor in ohms/km or ohms/mile.
+Conductor relative permeability
+Specify the relative permeability µr of the conducting material. µr = 1.0 for nonmagnetic conductors (aluminum, copper). This parameter is not accessible when the Include conductor skin effect parameter is not selected.
+Number of conductors per bundle
+Specify the number of subconductors in the bundle or 1 for single conductors.
+Bundle diameter
+Specify the bundle diameter in centimeters or inches. This parameter is not accessible when the Number of conductors per bundle is set to 1. When you specify bundled conductors, the subconductors are assumed to be evenly spaced on a circle. If this is not the case, you must enter individual subconductor positions in the Line Geometry table and lump these subconductors by giving them the same Phase number parameter.
+Angle of conductor 1
+Specify an angle in degrees that determines the position of the first conductor in the bundle with respect to a horizontal line parallel to ground. This angle determines the bundle orientation. This parameter is not accessible when the Number of conductors per bundle is set to 1. 
+Number of phase conductors (bundles)
+Specify the number of phase conductors (single conductors or bundles of subconductors).
+Number of ground wires (bundles)
+Specify the number of ground wires (single conductors or bundles of subconductors). Ground wires are not usually bundled.
+Conductor
+Lists the conductor or bundle identifiers. Phase conductors are identified p1, p2,..., pn. Ground wires are identified g1,g2,..., gn.
+Phase
+Specify the phase number to which the conductor belongs. Several conductors may have the same phase number. All conductors having the same phase number are lumped together and are considered as a single equivalent conductor in the R, L, and C matrices. For example, if you want to compute the line parameters of a three-phase line equivalent to a double-circuit line such as the one represented in the figure Configuration of a Three-Phase Double-Circuit Line, you specify phase numbers 1, 2, 3 for conductors p1, p2, p3 (circuit 1) and phase numbers 3, 2, 1 for conductors p4, p5, p6 (circuit 2), respectively. If you prefer to simulate this line as two individual circuits and have access to the six phase conductors, you specify phase numbers 1, 2, 3, 6, 5, 4 respectively for conductors p1, p2, p3, p4, p5 and p6. 
+
+In three-phase systems, the three phases are usually labeled A, B, and C. The correspondence with the phase number is:
+
+1, 2, 3, 4, 5, 6, 7, 8, 9,.... = A, B, C, A, B, C A, B, C,... 
+
+You can also use the phase number to lump conductors of an asymmetrical bundle.
+
+For ground wires, the phase number is forced to zero. All ground wires are lumped with the ground and they do not contribute to the R, L, and C matrix dimensions. If you need to access the ground wire connections in your model, you must specify these ground wires as normal phase conductors and manually connect them to the ground.
+X
+Specify the horizontal position of the conductor in meters or feet. The location of the zero reference position is arbitrary. For a symmetrical line, you normally choose X = 0 at the center of the line.
+Y tower
+Specify the vertical position of the conductor (at the tower) with respect to ground, in meters or feet.
+Y min
+Specify the vertical position of the conductor with respect to ground at mid-span, in meters or feet.
+
+The average height of the conductor (see the figure Configuration of a Three-Phase Double-Circuit Line) is produced by this equation:
+
+Yaverage=Ymin+sag3=2Ymin+Ytower3
+
+Ytower = height of conductor at tower 
+Ymin = height of conductor at mid span 
+sag = Ytower−Ymin 
+
+Instead of specifying two different values for Ytower and Ymin, you may specify the same Yaverage value.
+Type
+Specify one of the conductor or bundle type numbers listed in the first column of the table of conductor characteristics.
+Load typical data
+Opens a browser window where you can select examples of line configurations provided with SimPowerSystems™ software. Select the desired .mat file.
+
+Selecting Load typical data allows you to load one of the following line configurations:
+
+
+
+
+
+Line_25kV_4wires.mat 25-k V, three-phase distribution feeder with accessible neutral conductor. 
+Line_315kV_2circ.mat 315-k V, three-phase, double-circuit line using bundles of two conductors. Phase numbering is set to obtain the RLC parameters of the two individual circuits (six-phase line). 
+Line_450kV.mat  Bipolar +/−450-k V DC line using bundles of four conductors. 
+Line_500kV_2circ.mat 500-k V, three-phase, double-circuit line using bundles of three conductors. Phase numbering is set to obtain the RLC parameters of the three-phase line circuit equivalent to the two circuits connected in parallel. 
+Line_735kV.mat 735-k, V three-phase, line using bundles of four conductors. 
+
+Load user data
+Opens a browser window letting you select your own line data. Select the desired .mat file.
+Save
+Saves your line data by generating a .mat file that contains the GUI information and the line data.
+Compute RLC line parameters
+Computes the RLC parameters. After completion of the parameters computation, results are displayed in a new window, entitled Display RLC Values.
+
+
+Display RLC Values GUI
+
+When you click the Compute RLC line parameters, the Display RLC Values window opens. In this window, you can view and download parameters into your workspace and into your transmission line models.
+
+
+
+The frequency and ground resistivity used for evaluation of the R, L, and C matrices are displayed first. Then the computed RLC parameters are displayed.
+
+
+Note   The R, L, and C parameters are always displayed respectively in ohms/km, henries/km, and farads/km, even if the English units specify the input parameters.
+ 
+
+If the number of phase conductors is 3 or 6, the symmetrical component parameters are also displayed:
+•
+For a three-phase line (one circuit), R10, L10, and C10 vectors of two values are displayed for positive-sequence and zero-sequence RLC values.
+
+•
+For a six-phase line (two coupled three-phase circuits), R10, L10, and C10 vectors of five values containing the following RLC sequence parameters are displayed: positive-sequence and zero-sequence of circuit 1, mutual zero-sequence between circuit 1 and circuit 2, positive-sequence and zero-sequence of circuit 2.
+
+Send RLC parameters to workspace
+Sends the R, L, and C matrices, as well as the symmetrical component parameters to the MATLAB® workspace. The following variables are created in your workspace: R_matrix, L_matrix, C_matrix, and R10, L10, C10 for symmetrical components.
+Send RLC parameters to block
+Sends the RLC parameters into one of the following three blocks that you previously selected in your model: the Distributed Parameter Line block (either matrices or sequence RLC parameters), the single-phase PI Section Line block (one dimension matrix required), or the Three-Phase PI Section Line block (sequence components only).
+Selected block
+Confirms the block selection. The name of the selected block appears in the left window.
+RLC Matrices
+Downloads RLC matrices into the selected block. 
+Sequences
+Downloads RLC sequence parameters into the selected block. 
+Create a report
+Creates a file, XXX.rep, containing the line input parameters and the computed RLC parameters. The MATLAB editor opens to display the contents of the XXX.rep file.
+Close
+Closes the Display RLC Values window.
+
+
+Examples
+
+These examples illustrate the inputs and outputs of the power_lineparam GUI.
+
+The first example uses a simple line consisting of two conductors spaced by 1 meter at an average height of 8 meters above a perfect ground (ground resistivity ρg = 0). The two conductors are solid aluminum conductors (resistivity ρc = 28.3 10−9 Ω.m at 20º C) having a 15-mm diameter.
+
+The DC resistance per km of each conductor is:
+
+r=ρc⋅lA=28.3×10−9×1000π⋅(15×10−32)2=0.1601Ω/km
+
+As ground is supposed to be perfect, the off-diagonal terms of the R matrix are zero and the diagonal terms represent the conductor resistances:
+
+R=[0.1601000.1601]Ω/km
+
+For the solid conductors, the GMR is:
+
+GMR=r⋅e−μr/4=1.52e−1/4=0.5841cm
+
+The self- and mutual- inductances are computed as follows. The ΔL correction terms are ignored because ground resistivity is zero.
+
+L11L12L=L22=μ02π⋅log2hiGMR=2×10−4log2×80.5841×10−2=1.583×10−3H/km=L21=μ02π⋅logD12d12=2×10−4logG162+11=0.5549×10−3H/km=L11L21L12L22=1.583×10−30.5549×10−30.5549×10−31.583×10−3H/km
+
+The self- and mutual- capacitances are computed as follows:
+
+P11P12C=P22=12πεolog2hri=1.7975×107log2×80.75×10−2=1.3779×108km / F=P21=12πεologD12d12=1.7975×107logG162+11=4.9872×107km / F=P11P21P12P22−1=8.352×10−9−3.023×10−9−3.023×10−98.352×10−9F/km
+
+In the power_lineparam GUI, make sure that the specified frequency is 50 Hz. Select T/D ratio for computing the line inductance. Do not select Include conductor skin effect.
+
+
+
+The displayed GMR value (0.58433 cm) is the GMR value that you must use to include the change of conductor inductance due to frequency. This GMR value is slightly higher than the theoretical DC value (0.5841 cm). This 0.04% increase is due to skin effect at 50 Hz which produces a nonuniform current distribution. In this case, the line parameters are evaluated in DC because we are not including the skin effect.
+
+Click Compute RLC line parameters. The Display RLC Values window opens. Compare the RLC matrices with their theoretical values.
+
+
+
+The PI model for a 1-km line is obtained from the R, L, and C matrices. The PI RLC values are deduced from the self- and mutual- terms of the R, L, and C matrices. Subscripts s and m designate the self- and mutual- terms in the R, L, and C matrices.
+
+Rp1 = Rp2 = Rs = 0.1601 Ω/km
+
+Lp1 = Lp2 = Ls = 1.583 mH/km
+
+Cp1 = Cp2 = Cs + Cm = 8.352 – 3.023 = 5.329 nF/km (2.664 nF at each end of PI section)
+
+Cp1p2 = – Cm = 3.023 nF/km (1.511 nF at each end of PI section)
+
+
+
+You can also vary the ground resistivity and the frequency. Observe their impact on the resistance and inductance of the conductor and of the ground return. 
+
+Vary the ground resistivity from zero to 10000 Ω.m while keeping the frequency constant at 50 Hz. You should get values listed in the following table. The expressions Rs-Rm and Ls-Lm represent respectively the resistance and the inductance of the conductor, whereas Rm and Lm are the resistance and the inductance of the ground return. 
+
+Impact of Ground Resistivity (Frequency = 50 Hz; Skin Effect Not Included) 
+
+
+
+
+
+
+
+
+
+
+Ground 
+Resistivity (Ω.m)
+ 
+
+Conductor
+ Rs-Rm 
+(Ω/km)
+ 
+
+Ground
+Rm 
+(Ω/km)
+ 
+
+Conductor
+Ls-Lm 
+(mH/km)
+ 
+
+Ground
+Lm 
+(mH/km)
+ 
+
+
+0
+ 
+0.1601
+ 
+0
+ 
+1.028
+ 
+0.5549
+ 
+
+10
+ 
+0.1601
+ 
+0.04666
+ 
+1.029
+ 
+1.147
+ 
+
+100
+ 
+0.1601
+ 
+0.04845
+ 
+1.029
+ 
+1.370
+ 
+
+10 000
+ 
+0.1601
+ 
+0.04925
+ 
+1.029
+ 
+1.828
+ 
+
+
+
+
+When the ground resistivity varies in a normal range (between 10 Ω.m for humid soil and 10 000 Ω.m for dry, rocky ground), the ground resistance remains almost constant at 0.05 Ω/km, whereas its inductance increases from 1.15 mH/km to 1.83 mH/km. 
+
+Now select Include conductor skin effect and repeat the computation with different frequencies ranging from 0.05 Hz to 50 kHz, while keeping a ground resistivity of 100 Ω.m. 
+
+Impact of Frequency (Ground Resistivity = 100 Ω.m; with Conductor Skin Effect) 
+
+
+
+
+
+
+
+
+
+
+Frequency
+
+(Hz)
+ 
+
+Conductor
+Rs-Rm 
+(Ω/km)
+ 
+
+Ground
+Rm 
+(Ω/km)
+ 
+
+Conductor
+Ls-Lm
+(mH/km)
+ 
+
+Ground
+Lm 
+(mH/km)
+ 
+
+
+0.05
+ 
+0.1601
+ 
+4.93e-5
+ 
+1.029
+ 
+2.058
+ 
+
+50
+ 
+0.1606
+ 
+0.04844
+ 
+1.029
+ 
+1.370
+ 
+
+500
+ 
+0.2012
+ 
+0.4666
+ 
+1.022
+ 
+1.147
+ 
+
+5000
+ 
+0.5442
+ 
+4.198
+ 
+0.9944
+ 
+0.9351
+ 
+
+50 000
+ 
+1.641
+ 
+32.14
+ 
+0.9836
+ 
+0.7559
+ 
+
+
+
+
+This table shows that frequency has a very large impact on ground resistance but a much lower influence on ground inductance. Because of skin effect in the ground, when frequency increases, the ground current flows closer to the surface, reducing the equivalent section of the ground conductor and thereby increasing its resistance. As ground current travels at a lower depth at high frequencies, the loop inductance of conductor plus ground return (or self-inductance Ls) decreases.
+
+Because of conductor skin effect, frequency has a noticeable impact on conductor resistance from a few hundreds of hertz, but a negligible impact on conductor inductance. At nominal system frequency (50 Hz or 60 Hz), the increase of conductor resistance with respect to DC resistance (0.1601 Ω/km) is only 0.3%.
+
+This example corresponds to a 500-kV, three-phase, double-circuit line. Using the Load button, load the Line_500kV_2circ.mat line configuration saved in the typical line data. The following figure is power_lineparam GUI:
+
+
+
+Power is transmitted over six phase conductors forming the two three-phase circuits. The line is protected against lightning by two ground wires. The phase conductors use bundles of three subconductors. Subconductors are located at the top of an equilateral triangle of 50 cm side, corresponding to a 57.735 cm bundle diameter. This line configuration corresponds to the one shown in the figure Configuration of a Three-Phase Double-Circuit Line.
+
+Phase numbering has been set to obtain the line parameters of the three-phase line equivalent to the two circuits connected in parallel. Click Compute RLC line parameters to display the R, L, and C matrices and sequence parameters.
+
+The positive-sequence and zero-sequence parameters of the transposed line are displayed in the Display RLC Values window in the R10 and L10 vectors:
+
+R1 = 0.009009 Ω/km R0=0.2556 Ω/km
+
+L1 = 0.4408 mH/km L0= 2.601 mH/km
+
+C1 =25.87 nF/km C0=11.62 nF/km
+
+You can also get the parameters of the two individual circuits and have access to the six phase conductors. Change the phase numbers of conductors p4, p5, and p6 (circuit 2) to 6, 5, 4, respectively. The positive-sequence, zero-sequence, and mutual zero-sequence parameters of the transposed line are:
+
+R1 = 0.01840 Ω/km R0 =0.2649 Ω/km R0m = 0.2462 Ω/km
+
+L1 = 0.9296 mH/km L0 = 3.202 mH/km L0m = 2.0 mH/km
+
+C1 =12.57 nF/km C0 =7.856 nF/km C0m = −2.044 nF/km
+
+As the line is symmetrical, the positive- and zero-sequence parameters for circuit 2 are identical to the parameters of circuit 1.
+
+
+References
+
+
+
+[1]ADRIAN.OROZCO.JIMENEZ.ACOSTA.GAMEZ Electromagnetic Transients Program Reference Manual (EMTP Theory Book), 1986.
+
+
+[2] ADRIAN.OROZCO.JIMENEZ.ACOSTA.GAMEZ "Wave Propagation in Overhead Wires with Ground Return," Bell Systems Technical Journal, Vol. 5, pp 539-554, 1926.
+and simulate electrical power systems
+
+
+Getting Started
+Examples
+Simscape Blocks and Other Reference
+Release Notes
+PDF Documentation
+
+
+SimPowerSystems™ provides component libraries and analysis tools for modeling and simulating electrical power systems. The libraries offer models of electrical power components, including three-phase machines, electric drives, and components for applications such as flexible AC transmission systems (FACTS) and renewable energy systems. Harmonic analysis, calculation of total harmonic distortion (THD), load flow, and other key electrical power system analyses are automated. 
+
+SimPowerSystems models can be used to develop control systems and test system-level performance. You can parameterize your models using MATLAB® variables and expressions, and design control systems for your electrical power system in Simulink®. You can add mechanical, hydraulic, pneumatic, and other components to your model using Simscape™ and test them together in a single simulation environment. To deploy models to other simulation environments, including hardware-in-the-loop (HIL) systems, SimPowerSystems supports C-code generation.
+
+SimPowerSystems was developed in collaboration with Hydro-Québec of Montreal.
+
+Simscape Components
+
+Model electrical power systems using Simscape components
+
+Specialized Technology
+
+Model electrical power systems using specialized components and algorithms
+MATLAB Release Notes Prior to R2012a  
+When you create custom help and add it to the MathWorks documentation, the help link appears on the Home Help page. 
+
+ MATLAB  
+
+MATLAB Release Notes  
+When you create custom help and add it to the MathWorks documentation, the help link appears on the Home Help page. 
+
+ MATLAB 
