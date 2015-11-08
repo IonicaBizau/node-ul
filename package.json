@@ -1,6 +1,6 @@
 {
   "name": "ul",
-  "version": "5.0.0",
+  "version": "5.1.0",
   "description": "A minimalist utility library.",
   "main": "lib/index.js",
   "scripts": {
@@ -15,7 +15,7 @@
     "nodejs",
     "minimalist"
   ],
-  "author": "Ionică Bizău <bizauionica@gmail.com>",
+  "author": "Ionică Bizău <bizauionica@gmail.com> (http://ionicabizau.net)",
   "license": "KINDLY",
   "bugs": {
     "url": "https://github.com/IonicaBizau/node-ul/issues"
