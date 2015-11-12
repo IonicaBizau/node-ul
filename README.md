@@ -144,8 +144,6 @@ If you are using this library in one of your projects, add it in this list. :spa
 
  - [`gh.js`](https://github.com/IonicaBizau/gh.js)
 
- - [`git-issues`](https://github.com/softwarescales/git-issues) by Gabriel Petrovay
-
  - [`git-stats`](https://github.com/IonicaBizau/git-stats)
 
  - [`git-stats-importer`](https://github.com/IonicaBizau/git-stats-importer)
