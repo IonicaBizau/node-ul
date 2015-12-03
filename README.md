@@ -5,7 +5,7 @@ A minimalist utility library.
 ## Installation
 
 ```sh
-$ npm i ul
+$ npm i --save ul
 ```
 
 ## Example
@@ -136,13 +136,21 @@ If you are using this library in one of your projects, add it in this list. :spa
 
  - [`electronify`](https://github.com/IonicaBizau/electronify#readme)
 
+ - [`engine-parser`](https://github.com/IonicaBizau/engine-parser) by jillix
+
  - [`engine-tools`](https://github.com/jillix/engine-tools) by jillix
+
+ - [`enny`](https://github.com/IonicaBizau/enny) by jillix
 
  - [`fwatcher`](https://github.com/IonicaBizau/node-fwatcher)
 
  - [`gh-contributions`](https://github.com/IonicaBizau/github-contributions)
 
  - [`gh.js`](https://github.com/IonicaBizau/gh.js)
+
+ - [`ghcal`](https://github.com/IonicaBizau/ghcal)
+
+ - [`ghosty`](https://github.com/IonicaBizau/ghosty#readme)
 
  - [`git-stats`](https://github.com/IonicaBizau/git-stats)
 
@@ -152,7 +160,7 @@ If you are using this library in one of your projects, add it in this list. :spa
 
  - [`github-stats`](https://github.com/IonicaBizau/github-stats)
 
- - [`gpm`](https://github.com/IonicaBizau/node-gpm)
+ - [`gpm`](https://github.com/IonicaBizau/gpm)
 
  - [`gry`](https://github.com/IonicaBizau/node-gry)
 
@@ -164,11 +172,15 @@ If you are using this library in one of your projects, add it in this list. :spa
 
  - [`le-table`](https://github.com/IonicaBizau/node-le-table)
 
+ - [`map-o`](https://github.com/IonicaBizau/node-map-o)
+
  - [`markdown-templator`](https://github.com/grit96/markdown-templator#readme) by Geraint White
 
  - [`match`](https://github.com/IonicaBizau/match.js#readme)
 
  - [`mongof`](https://github.com/IonicaBizau/node-mongof)
+
+ - [`nodeice`](https://github.com/IonicaBizau/nodeice)
 
  - [`npmreserve`](https://github.com/IonicaBizau/npmreserve)
 
@@ -177,6 +189,8 @@ If you are using this library in one of your projects, add it in this list. :spa
  - [`page-changed`](https://github.com/IonicaBizau/node-page-changed)
 
  - [`parent-search`](https://github.com/IonicaBizau/node-parent-search)
+
+ - [`phantom-jquery`](https://github.com/IonicaBizau/phantom-jquery#readme)
 
  - [`regarde`](https://github.com/IonicaBizau/regarde)
 
@@ -198,13 +212,12 @@ If you are using this library in one of your projects, add it in this list. :spa
 
 ## License
 
-[KINDLY][license] © [Ionică Bizău][website]
+[MIT][license] © [Ionică Bizău][website]
 
-[license]: http://ionicabizau.github.io/kindly-license/?author=Ionic%C4%83%20Biz%C4%83u%20%3Cbizauionica@gmail.com%3E&year=2014
-
-[website]: http://ionicabizau.net
 [paypal-donations]: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=RVXDDLKKLQRJW
 [donate-now]: http://i.imgur.com/6cMbHOC.png
 
+[license]: http://showalicense.com/?fullname=Ionic%C4%83%20Biz%C4%83u%20%3Cbizauionica%40gmail.com%3E%20(http%3A%2F%2Fionicabizau.net)&year=2014#license-mit
+[website]: http://ionicabizau.net
 [contributing]: /CONTRIBUTING.md
 [docs]: /DOCUMENTATION.md
