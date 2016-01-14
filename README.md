@@ -1,6 +1,6 @@
-# ul [![Support this project][donate-now]][paypal-donations]
+# ul [![PayPal](https://img.shields.io/badge/%24-paypal-f39c12.svg)][paypal-donations] [![Travis](https://img.shields.io/travis/IonicaBizau/node-ul.svg)](https://travis-ci.org/IonicaBizau/node-ul/) [![Version](https://img.shields.io/npm/v/ul.svg)](https://www.npmjs.com/package/ul) [![Downloads](https://img.shields.io/npm/dt/ul.svg)](https://www.npmjs.com/package/ul) [![Get help on Codementor](https://cdn.codementor.io/badges/get_help_github.svg)](https://www.codementor.io/johnnyb?utm_source=github&utm_medium=button&utm_term=johnnyb&utm_campaign=github)
 
-A minimalist utility library.
+> A minimalist utility library.
 
 ## Installation
 
@@ -136,6 +136,10 @@ If you are using this library in one of your projects, add it in this list. :spa
 
  - [`electronify`](https://github.com/IonicaBizau/electronify#readme)
 
+ - [`emoji-logger`](https://github.com/IonicaBizau/emoji-logger#readme)
+
+ - [`engine-flow-types`](https://github.com/jillix/engine-flow-types#readme) by jillix
+
  - [`engine-parser`](https://github.com/IonicaBizau/engine-parser) by jillix
 
  - [`engine-tools`](https://github.com/jillix/engine-tools) by jillix
@@ -171,8 +175,6 @@ If you are using this library in one of your projects, add it in this list. :spa
  - [`jsonrequest`](https://github.com/IonicaBizau/node-jsonrequest)
 
  - [`le-table`](https://github.com/IonicaBizau/node-le-table)
-
- - [`map-o`](https://github.com/IonicaBizau/node-map-o)
 
  - [`markdown-templator`](https://github.com/grit96/markdown-templator#readme) by Geraint White
 
