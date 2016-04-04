@@ -1,0 +1,4226 @@
+Logo 
+
+
+
+ 
+ HOME  | HANDBOOK  | FACTSHEETS  | FAQs  |  RESOURCES  | REGISTRATION AGENCIES  | NEWS  | MEMBERS AREA  
+ 
+
+ 
+  
+spacer 
+Factsheet
+
+DOI® Proxy Server System User Documentation
+
+ 
+
+1. Resolving Handles Using the Proxy Server System
+ 2. Encoding Handles for Use in URIs
+ 3. Proxy Server Query Parameters
+ 4. Proxy Server REST API 
+
+ 
+
+Note that this information, and additional information about the DOI Proxy Server System, Resolution and Numbering, can be found in the DOI Handbook.
+
+ 
+
+Users may resolve DOI names that are structured to use the DOI system Proxy Server (http://doi.org (preferred) or http://dx.doi.org). The resolution of the DOI name in this case depends on the use of URL syntax: the example DOI name doi:10.10.123/456 would be resolved from the address: "http://doi.org/10.123/456". Any standard browser encountering a DOI name in this form will be able to resolve it. The proxy service (both doi.org and dx.doi.org) is accessible over IPv6, and supports DNSSEC. The proxy servers respond to HTTPS as well as HTTP requests.
+
+ 
+
+1. Resolving DOIs using the Proxy Server System
+
+The DOI system uses the Handle System® to manage digital objects (see the DOI Factsheet "DOI System and the Handle System"). At the infrastructure level, DOI names are handles.
+
+The DOI system Proxy Server is basically a web server that knows how to talk to the Handle System, and at this writing, most DOI® names found on the web are embedded in URLs that use the proxy server for DOI name resolution. For any HTTP request that combines the proxy's domain name with a DOI name, for example 
+
+http://doi.org/10.1000/demo_DOI
+
+the proxy will query the Handle System for the DOI name, take the URL in the handle record (or if there are multiple URLs in the handle record it will select one, and that selection is in no particular order) and send an HTTP redirect to that URL to the user's web browser.
+
+Increasing numbers of DOI names include data in addition to the single default URL. This is sometimes referenced as multiple resolution. These added values are intended for use by more advanced applications which have the ability to take advantage of multiple pieces of data, e.g., the location of enhanced metadata or related documents.
+
+In addition to handle values of type URL, the proxy server understands values of handle value type 10320/loc. These values contain XML describing multiple redirection endpoints for the DOI name and conditions under which the proxy should use them. For further documentation see DOI Handbook Section 3.8.4.3, Resolution of Multiple URLs using the 10320/loc Handle Type.
+
+The proxy server is configured to display a "DOI Name Not Found" error page when queried for a DOI name that it cannot find.
+
+The DOI names 10.1000/demo_DOI and 10.1000/demo_DOI/ are both valid DOI names, but it is unlikely that a DOI name will be created with a trailing slash. If a resolution request for a DOI name with a trailing slash is received by the proxy server and that DOI name is not found, the proxy server will return an error report that includes a warning that the requested DOI name contained a trailing slash, and a link to click to resolve the same string without the slash.
+
+The DOI system Proxy Server is really multiple servers running at multiple locations, with the load distributed evenly across all servers. To speed resolution, the proxy servers cache handle values, with the TTL set to 24 hours. This means that if a handle value is changed, it can take up to 24 hours before the new value is returned.
+
+Note that the IDF also runs a proxy server for the shortDOI™ Service that is not part of this DOI system Proxy Server specification.
+
+ 
+
+2. Encoding DOIs for use in URIs
+
+The Handle System uses UTF-8, a Unicode implementation, and has no character set constraints. But the DOI system Proxy Server is a web server that sends redirects to web browsers using HTTP syntax, so characters in DOI names that may not be interpreted correctly by web browsers, for example '?', should be avoided or encoded. A non-ASCII character in a DOI name should be converted to UTF-8, and each UTF-8 byte that isn't ASCII should be %encoded.
+
+The "#" is another example. Only if you send the DOI system Proxy Server the DOI name
+
+10.1000/res#test
+
+encoded as
+
+http://doi.org/10.1000/res%23test
+
+will the proxy correctly resolve the DOI name. If it is not encoded, #test will be treated as a fragment and removed by the web browser before it gets to the proxy, which will then attempt to resolve  10.1000/res instead.
+
+Tables 1 and 2 summarize the encoding guidelines for DOI. URLs have the most restricted set of characters. Table 1 lists the characters that should always be hex encoded. Table 2 lists additional characters where it is recommended that characters be replaced by hex-encoding. The distinction between the lists is between practical experience with current web browsers and the more formal specification of URL syntax. In the DOI Directory all characters represent themselves.
+
+Table 1: Mandatory Encoding 
+
+
+Character Encoding 
+% (%25) 
+" (%22) 
+# (%23) 
+SPACE (%20) 
+? (%3F) 
+
+Table 2: Recommended Encoding 
+
+
+Character Encoding 
+< (%3C) 
+> (%3E) 
+{ (%7B) 
+} (%7D) 
+^ (%5E) 
+[ (%5B) 
+] (%5D) 
+` (%60) 
+| (%7C) 
+\ (%5C) 
++ (%2B) 
+
+Note also that web browser treatment of "/./" and "/../" can be inconsistent. It is recommended that one of the slashes be percent encoded, e.g., change "/./" to "/.%2F" and "/../" to "/..%2F". 
+
+ 
+
+3. Proxy Server query parameters
+
+noredirect
+
+Do not redirect using URL or 10320/loc values; display handle values instead.
+
+ignore_aliases
+
+Ordinarily the proxy will take a handle value of type HS_ALIAS to be a handle that should be resolved instead of the input handle; with this parameter values of type HS_ALIAS are ignored.
+
+auth
+
+Authoritative query. The proxy will bypass its cache and resolve the handle at an authoritative server.
+
+cert
+
+Certified query. The proxy will require an authenticated response from the handle server. Not generally needed by end users.
+
+index
+
+Only resolve the handle value at the specified index. May be repeated to resolve multiple indices.
+
+type
+
+Only resolve handle values of the specified type. May be repeated to resolve multiple types.
+
+urlappend
+
+The value of this parameter is appended to the end of the URL used for redirection.
+
+locatt=key:value
+
+For multiple redirection; specifies a key:value pair to determine the choice of redirection from 10320/loc values.
+
+action=showurls
+
+For multiple redirection; returns an XML representation of the possible redirect locations.
+
+nols=y
+
+Some libraries and other institutions use a special cookie to cause the DOI system Proxy Server to redirect users to an "appropriate copy" using a local service. For example users may be redirected to the full text of a journal article already purchased by the library, instead of a landing page indicating a fee. Users can add the "nols=y" query parameter to prevent the local service redirect.
+ 
+ 
+
+4. Proxy Server REST API
+
+The DOI system Proxy Server REST API allows programmatic access to DOI name resolution using HTTP.
+
+Example Request/Response
+
+A REST API request can be made by performing a standard HTTP GET of
+
+/api/handles/<handle>
+
+The API returns JSON.
+
+For example, http://doi.org/api/handles/10.1000/1 yields the response
+
+{
+  "responseCode": 1,
+  "handle": "10.1000/1",
+  "values": [
+    {
+      "index": 100,
+      "type": "HS_ADMIN",
+      "data": {
+        "format": "admin",
+        "value": {
+          "handle": "0.NA/10.1000",
+          "index": 200,
+          "permissions": "011111111111"
+        }
+      },
+      "ttl": 86400,
+      "timestamp": "2000-04-13T15:08:57Z"
+    },
+    {
+      "index": 1,
+      "type": "URL",
+      "data": { "format": "string", "value": "http://www.doi.org/index.html" },
+      "ttl": 86400,
+      "timestamp": "2004-09-10T19:49:59Z"
+    }
+  ]
+}
+
+
+Response Format
+
+The response is a JSON object which includes a "responseCode" (an integer referring to a Handle protocol response code), an echo of the "handle" resolved, and either a list of "values" or, in the case of an error, an optional "message" which is a string describing the error. 
+
+Each value is a JSON object with generally 5 attributes:
+•"index" : an integer 
+•"type" : a string
+•"data" : an object, see below
+•"ttl" : the time-to-live in seconds of the value, an integer (or, in the rare case of an absolute expiration time, that expiration time as an ISO8601-formatted string)
+•"timestamp" : an ISO8601-formatted string
+
+Handle value data is an object with properties "format", a string, and "value".
+•If "format"="string", "value" is a string, representing the data as a UTF-8 string.
+•If "format"="base64", "value" is a string, with a BASE64 encoding of the data.
+•If "format"="hex", "value" is a string, with a hex encoding of the data.
+•If "format"="admin", "value" is an object, representing an HS_ADMIN value, with properties "handle" (a string), "index" (an integer), and "permissions" (a string, representing the bitmask of permissions).
+•If "format"="vlist", "value" is an list of objects, representing an HS_VLIST value; each object in the list has properties "handle" (a string) and "index" (an integer).
+•If "format"="site", "value" is an object, representing an HS_SITE value. As the structure of this object is complicated and generally of limited technical interest it is currently omitted from this documentation.
+
+Response Codes
+•1 : Success. (HTTP 200 OK)
+•2 : Error. Something unexpected went wrong during handle resolution. (HTTP 500 Internal Server Error)
+•100 : Handle Not Found. (HTTP 404 Not Found)
+•200 : Values Not Found. The handle exists but has no values (or no values according to the types and indices specified). (HTTP 200 OK)
+
+Query Parameters
+
+This DOI system Proxy Server REST API is CORS-compliant, however, JSONP callbacks are also supported using a "callback" query parameter.
+
+The presence of the "pretty" query parameter instructs the server to pretty-print the JSON output.
+
+The "auth" query parameter instructs the proxy server to bypass its cache and query a primary handle server directly for the newest handle data.
+
+The "cert" query parameter instructs the proxy server to request an authenticated response from the source handle server. Not generally needed by end users.
+
+The "type" and "index" query parameters allow the resolution response to be restricted to specific types and indexes of interest. Multiple "type" and "index" parameters are allowed and values are returned which match any of the specified types or indexes. For example,
+
+http://doi.org/api/handles/10.1000/1?type=URL&callback=processResponse yields the response
+
+processResponse({
+  "responseCode": 1,
+  "handle": "10.1000/1",
+  "values": [
+    {
+      "index": 1,
+      "type": "URL",
+      "data": { "format": "string", "value": "http://www.doi.org/index.html" },
+      "ttl": 86400,
+      "timestamp": "2004-09-10T19:49:59Z"
+    }
+  ]
+});
+
+
+  
+
+ 
+ 
+
+
+ 
+DOI_disc_logo  ®, DOI®, DOI.ORG®, and shortDOI® are trademarks of ADRIAN.OROZCO.JIMENEZ.ACOSTA.GAMEZ.COM/
+Logo 
+
+
+
+ 
+ HOME  | HANDBOOK  | FACTSHEETS  | FAQs  |  RESOURCES  | REGISTRATION AGENCIES  | NEWS  | MEMBERS AREA  
+ 
+
+ 
+  
+spacer 
+Factsheet
+
+DOI® Proxy Server System User Documentation
+
+ 
+
+1. Resolving Handles Using the Proxy Server System
+ 2. Encoding Handles for Use in URIs
+ 3. Proxy Server Query Parameters
+ 4. Proxy Server REST API 
+
+ 
+
+Note that this information, and additional information about the DOI Proxy Server System, Resolution and Numbering, can be found in the DOI Handbook.
+
+ 
+
+Users may resolve DOI names that are structured to use the DOI system Proxy Server (http://doi.org (preferred) or http://dx.doi.org). The resolution of the DOI name in this case depends on the use of URL syntax: the example DOI name doi:10.10.123/456 would be resolved from the address: "http://doi.org/10.123/456". Any standard browser encountering a DOI name in this form will be able to resolve it. The proxy service (both doi.org and dx.doi.org) is accessible over IPv6, and supports DNSSEC. The proxy servers respond to HTTPS as well as HTTP requests.
+
+ 
+
+1. Resolving DOIs using the Proxy Server System
+
+The DOI system uses the Handle System® to manage digital objects (see the DOI Factsheet "DOI System and the Handle System"). At the infrastructure level, DOI names are handles.
+
+The DOI system Proxy Server is basically a web server that knows how to talk to the Handle System, and at this writing, most DOI® names found on the web are embedded in URLs that use the proxy server for DOI name resolution. For any HTTP request that combines the proxy's domain name with a DOI name, for example 
+
+http://doi.org/10.1000/demo_DOI
+
+the proxy will query the Handle System for the DOI name, take the URL in the handle record (or if there are multiple URLs in the handle record it will select one, and that selection is in no particular order) and send an HTTP redirect to that URL to the user's web browser.
+
+Increasing numbers of DOI names include data in addition to the single default URL. This is sometimes referenced as multiple resolution. These added values are intended for use by more advanced applications which have the ability to take advantage of multiple pieces of data, e.g., the location of enhanced metadata or related documents.
+
+In addition to handle values of type URL, the proxy server understands values of handle value type 10320/loc. These values contain XML describing multiple redirection endpoints for the DOI name and conditions under which the proxy should use them. For further documentation see DOI Handbook Section 3.8.4.3, Resolution of Multiple URLs using the 10320/loc Handle Type.
+
+The proxy server is configured to display a "DOI Name Not Found" error page when queried for a DOI name that it cannot find.
+
+The DOI names 10.1000/demo_DOI and 10.1000/demo_DOI/ are both valid DOI names, but it is unlikely that a DOI name will be created with a trailing slash. If a resolution request for a DOI name with a trailing slash is received by the proxy server and that DOI name is not found, the proxy server will return an error report that includes a warning that the requested DOI name contained a trailing slash, and a link to click to resolve the same string without the slash.
+
+The DOI system Proxy Server is really multiple servers running at multiple locations, with the load distributed evenly across all servers. To speed resolution, the proxy servers cache handle values, with the TTL set to 24 hours. This means that if a handle value is changed, it can take up to 24 hours before the new value is returned.
+
+Note that the IDF also runs a proxy server for the shortDOI™ Service that is not part of this DOI system Proxy Server specification.
+
+ 
+
+2. Encoding DOIs for use in URIs
+
+The Handle System uses UTF-8, a Unicode implementation, and has no character set constraints. But the DOI system Proxy Server is a web server that sends redirects to web browsers using HTTP syntax, so characters in DOI names that may not be interpreted correctly by web browsers, for example '?', should be avoided or encoded. A non-ASCII character in a DOI name should be converted to UTF-8, and each UTF-8 byte that isn't ASCII should be %encoded.
+
+The "#" is another example. Only if you send the DOI system Proxy Server the DOI name
+
+10.1000/res#test
+
+encoded as
+
+http://doi.org/10.1000/res%23test
+
+will the proxy correctly resolve the DOI name. If it is not encoded, #test will be treated as a fragment and removed by the web browser before it gets to the proxy, which will then attempt to resolve  10.1000/res instead.
+
+Tables 1 and 2 summarize the encoding guidelines for DOI. URLs have the most restricted set of characters. Table 1 lists the characters that should always be hex encoded. Table 2 lists additional characters where it is recommended that characters be replaced by hex-encoding. The distinction between the lists is between practical experience with current web browsers and the more formal specification of URL syntax. In the DOI Directory all characters represent themselves.
+
+Table 1: Mandatory Encoding 
+
+
+Character Encoding 
+% (%25) 
+" (%22) 
+# (%23) 
+SPACE (%20) 
+? (%3F) 
+
+Table 2: Recommended Encoding 
+
+
+Character Encoding 
+< (%3C) 
+> (%3E) 
+{ (%7B) 
+} (%7D) 
+^ (%5E) 
+[ (%5B) 
+] (%5D) 
+` (%60) 
+| (%7C) 
+\ (%5C) 
++ (%2B) 
+
+Note also that web browser treatment of "/./" and "/../" can be inconsistent. It is recommended that one of the slashes be percent encoded, e.g., change "/./" to "/.%2F" and "/../" to "/..%2F". 
+
+ 
+
+3. Proxy Server query parameters
+
+noredirect
+
+Do not redirect using URL or 10320/loc values; display handle values instead.
+
+ignore_aliases
+
+Ordinarily the proxy will take a handle value of type HS_ALIAS to be a handle that should be resolved instead of the input handle; with this parameter values of type HS_ALIAS are ignored.
+
+auth
+
+Authoritative query. The proxy will bypass its cache and resolve the handle at an authoritative server.
+
+cert
+
+Certified query. The proxy will require an authenticated response from the handle server. Not generally needed by end users.
+
+index
+
+Only resolve the handle value at the specified index. May be repeated to resolve multiple indices.
+
+type
+
+Only resolve handle values of the specified type. May be repeated to resolve multiple types.
+
+urlappend
+
+The value of this parameter is appended to the end of the URL used for redirection.
+
+locatt=key:value
+
+For multiple redirection; specifies a key:value pair to determine the choice of redirection from 10320/loc values.
+
+action=showurls
+
+For multiple redirection; returns an XML representation of the possible redirect locations.
+
+nols=y
+
+Some libraries and other institutions use a special cookie to cause the DOI system Proxy Server to redirect users to an "appropriate copy" using a local service. For example users may be redirected to the full text of a journal article already purchased by the library, instead of a landing page indicating a fee. Users can add the "nols=y" query parameter to prevent the local service redirect.
+ 
+ 
+
+4. Proxy Server REST API
+
+The DOI system Proxy Server REST API allows programmatic access to DOI name resolution using HTTP.
+
+Example Request/Response
+
+A REST API request can be made by performing a standard HTTP GET of
+
+/api/handles/<handle>
+
+The API returns JSON.
+
+For example, http://doi.org/api/handles/10.1000/1 yields the response
+
+{
+  "responseCode": 1,
+  "handle": "10.1000/1",
+  "values": [
+    {
+      "index": 100,
+      "type": "HS_ADMIN",
+      "data": {
+        "format": "admin",
+        "value": {
+          "handle": "0.NA/10.1000",
+          "index": 200,
+          "permissions": "011111111111"
+        }
+      },
+      "ttl": 86400,
+      "timestamp": "2000-04-13T15:08:57Z"
+    },
+    {
+      "index": 1,
+      "type": "URL",
+      "data": { "format": "string", "value": "http://www.doi.org/index.html" },
+      "ttl": 86400,
+      "timestamp": "2004-09-10T19:49:59Z"
+    }
+  ]
+}
+
+
+Response Format
+
+The response is a JSON object which includes a "responseCode" (an integer referring to a Handle protocol response code), an echo of the "handle" resolved, and either a list of "values" or, in the case of an error, an optional "message" which is a string describing the error. 
+
+Each value is a JSON object with generally 5 attributes:
+•"index" : an integer 
+•"type" : a string
+•"data" : an object, see below
+•"ttl" : the time-to-live in seconds of the value, an integer (or, in the rare case of an absolute expiration time, that expiration time as an ISO8601-formatted string)
+•"timestamp" : an ISO8601-formatted string
+
+Handle value data is an object with properties "format", a string, and "value".
+•If "format"="string", "value" is a string, representing the data as a UTF-8 string.
+•If "format"="base64", "value" is a string, with a BASE64 encoding of the data.
+•If "format"="hex", "value" is a string, with a hex encoding of the data.
+•If "format"="admin", "value" is an object, representing an HS_ADMIN value, with properties "handle" (a string), "index" (an integer), and "permissions" (a string, representing the bitmask of permissions).
+•If "format"="vlist", "value" is an list of objects, representing an HS_VLIST value; each object in the list has properties "handle" (a string) and "index" (an integer).
+•If "format"="site", "value" is an object, representing an HS_SITE value. As the structure of this object is complicated and generally of limited technical interest it is currently omitted from this documentation.
+
+Response Codes
+•1 : Success. (HTTP 200 OK)
+•2 : Error. Something unexpected went wrong during handle resolution. (HTTP 500 Internal Server Error)
+•100 : Handle Not Found. (HTTP 404 Not Found)
+•200 : Values Not Found. The handle exists but has no values (or no values according to the types and indices specified). (HTTP 200 OK)
+
+Query Parameters
+
+This DOI system Proxy Server REST API is CORS-compliant, however, JSONP callbacks are also supported using a "callback" query parameter.
+
+The presence of the "pretty" query parameter instructs the server to pretty-print the JSON output.
+
+The "auth" query parameter instructs the proxy server to bypass its cache and query a primary handle server directly for the newest handle data.
+
+The "cert" query parameter instructs the proxy server to request an authenticated response from the source handle server. Not generally needed by end users.
+
+The "type" and "index" query parameters allow the resolution response to be restricted to specific types and indexes of interest. Multiple "type" and "index" parameters are allowed and values are returned which match any of the specified types or indexes. For example,
+
+For example, http://doi.org/api/handles/10.1000/1?type=URL&callback=processResponse yields the response
+
+processResponse({
+  "responseCode": 1,
+  "handle": "10.1000/1",
+  "values": [
+    {
+      "index": 1,
+      "type": "URL",
+      "data": { "format": "string", "value": "http://www.doi.org/index.html" },
+      "ttl": 86400,
+      "timestamp": "2004-09-10T19:49:59Z"
+    }
+  ]
+});
+
+Logo 
+
+
+
+ 
+ HOME  | HANDBOOK  | FACTSHEETS  | FAQs  |  RESOURCES  | REGISTRATION AGENCIES  | NEWS  | MEMBERS AREA  
+ 
+
+ 
+  
+spacer 
+Factsheet
+
+DOI® Proxy Server System User Documentation
+
+ 
+
+1. Resolving Handles Using the Proxy Server System
+ 2. Encoding Handles for Use in URIs
+ 3. Proxy Server Query Parameters
+ 4. Proxy Server REST API 
+
+ 
+
+Note that this information, and additional information about the DOI Proxy Server System, Resolution and Numbering, can be found in the DOI Handbook.
+
+ 
+
+Users may resolve DOI names that are structured to use the DOI system Proxy Server (http://doi.org (preferred) or http://dx.doi.org). The resolution of the DOI name in this case depends on the use of URL syntax: the example DOI name doi:10.10.123/456 would be resolved from the address: "http://doi.org/10.123/456". Any standard browser encountering a DOI name in this form will be able to resolve it. The proxy service (both doi.org and dx.doi.org) is accessible over IPv6, and supports DNSSEC. The proxy servers respond to HTTPS as well as HTTP requests.
+
+ 
+
+1. Resolving DOIs using the Proxy Server System
+
+The DOI system uses the Handle System® to manage digital objects (see the DOI Factsheet "DOI System and the Handle System"). At the infrastructure level, DOI names are handles.
+
+The DOI system Proxy Server is basically a web server that knows how to talk to the Handle System, and at this writing, most DOI® names found on the web are embedded in URLs that use the proxy server for DOI name resolution. For any HTTP request that combines the proxy's domain name with a DOI name, for example 
+
+http://doi.org/10.1000/demo_DOI
+
+the proxy will query the Handle System for the DOI name, take the URL in the handle record (or if there are multiple URLs in the handle record it will select one, and that selection is in no particular order) and send an HTTP redirect to that URL to the user's web browser.
+
+Increasing numbers of DOI names include data in addition to the single default URL. This is sometimes referenced as multiple resolution. These added values are intended for use by more advanced applications which have the ability to take advantage of multiple pieces of data, e.g., the location of enhanced metadata or related documents.
+
+In addition to handle values of type URL, the proxy server understands values of handle value type 10320/loc. These values contain XML describing multiple redirection endpoints for the DOI name and conditions under which the proxy should use them. For further documentation see DOI Handbook Section 3.8.4.3, Resolution of Multiple URLs using the 10320/loc Handle Type.
+
+The proxy server is configured to display a "DOI Name Not Found" error page when queried for a DOI name that it cannot find.
+
+The DOI names 10.1000/demo_DOI and 10.1000/demo_DOI/ are both valid DOI names, but it is unlikely that a DOI name will be created with a trailing slash. If a resolution request for a DOI name with a trailing slash is received by the proxy server and that DOI name is not found, the proxy server will return an error report that includes a warning that the requested DOI name contained a trailing slash, and a link to click to resolve the same string without the slash.
+
+The DOI system Proxy Server is really multiple servers running at multiple locations, with the load distributed evenly across all servers. To speed resolution, the proxy servers cache handle values, with the TTL set to 24 hours. This means that if a handle value is changed, it can take up to 24 hours before the new value is returned.
+
+Note that the IDF also runs a proxy server for the shortDOI™ Service that is not part of this DOI system Proxy Server specification.
+
+ 
+
+2. Encoding DOIs for use in URIs
+
+The Handle System uses UTF-8, a Unicode implementation, and has no character set constraints. But the DOI system Proxy Server is a web server that sends redirects to web browsers using HTTP syntax, so characters in DOI names that may not be interpreted correctly by web browsers, for example '?', should be avoided or encoded. A non-ASCII character in a DOI name should be converted to UTF-8, and each UTF-8 byte that isn't ASCII should be %encoded.
+
+The "#" is another example. Only if you send the DOI system Proxy Server the DOI name
+
+10.1000/res#test
+
+encoded as
+
+http://doi.org/10.1000/res%23test
+
+will the proxy correctly resolve the DOI name. If it is not encoded, #test will be treated as a fragment and removed by the web browser before it gets to the proxy, which will then attempt to resolve  10.1000/res instead.
+
+Tables 1 and 2 summarize the encoding guidelines for DOI. URLs have the most restricted set of characters. Table 1 lists the characters that should always be hex encoded. Table 2 lists additional characters where it is recommended that characters be replaced by hex-encoding. The distinction between the lists is between practical experience with current web browsers and the more formal specification of URL syntax. In the DOI Directory all characters represent themselves.
+
+Table 1: Mandatory Encoding 
+
+
+Character Encoding 
+% (%25) 
+" (%22) 
+# (%23) 
+SPACE (%20) 
+? (%3F) 
+
+Table 2: Recommended Encoding 
+
+
+Character Encoding 
+< (%3C) 
+> (%3E) 
+{ (%7B) 
+} (%7D) 
+^ (%5E) 
+[ (%5B) 
+] (%5D) 
+` (%60) 
+| (%7C) 
+\ (%5C) 
++ (%2B) 
+
+Note also that web browser treatment of "/./" and "/../" can be inconsistent. It is recommended that one of the slashes be percent encoded, e.g., change "/./" to "/.%2F" and "/../" to "/..%2F". 
+
+ 
+
+3. Proxy Server query parameters
+
+noredirect
+
+Do not redirect using URL or 10320/loc values; display handle values instead.
+
+ignore_aliases
+
+Ordinarily the proxy will take a handle value of type HS_ALIAS to be a handle that should be resolved instead of the input handle; with this parameter values of type HS_ALIAS are ignored.
+
+auth
+
+Authoritative query. The proxy will bypass its cache and resolve the handle at an authoritative server.
+
+cert
+
+Certified query. The proxy will require an authenticated response from the handle server. Not generally needed by end users.
+
+index
+
+Only resolve the handle value at the specified index. May be repeated to resolve multiple indices.
+
+type
+
+Only resolve handle values of the specified type. May be repeated to resolve multiple types.
+
+urlappend
+
+The value of this parameter is appended to the end of the URL used for redirection.
+
+locatt=key:value
+
+For multiple redirection; specifies a key:value pair to determine the choice of redirection from 10320/loc values.
+
+action=showurls
+
+For multiple redirection; returns an XML representation of the possible redirect locations.
+
+nols=y
+
+Some libraries and other institutions use a special cookie to cause the DOI system Proxy Server to redirect users to an "appropriate copy" using a local service. For example users may be redirected to the full text of a journal article already purchased by the library, instead of a landing page indicating a fee. Users can add the "nols=y" query parameter to prevent the local service redirect.
+ 
+ 
+
+4. Proxy Server REST API
+
+The DOI system Proxy Server REST API allows programmatic access to DOI name resolution using HTTP.
+
+Example Request/Response
+
+A REST API request can be made by performing a standard HTTP GET of
+
+/api/handles/<handle>
+
+The API returns JSON.
+
+For example, http://doi.org/api/handles/10.1000/1 yields the response
+
+{
+  "responseCode": 1,
+  "handle": "10.1000/1",
+  "values": [
+    {
+      "index": 100,
+      "type": "HS_ADMIN",
+      "data": {
+        "format": "admin",
+        "value": {
+          "handle": "0.NA/10.1000",
+          "index": 200,
+          "permissions": "011111111111"
+        }
+      },
+      "ttl": 86400,
+      "timestamp": "2000-04-13T15:08:57Z"
+    },
+    {
+      "index": 1,
+      "type": "URL",
+      "data": { "format": "string", "value": "http://www.doi.org/index.html" },
+      "ttl": 86400,
+      "timestamp": "2004-09-10T19:49:59Z"
+    }
+  ]
+}
+
+
+Response Format
+
+The response is a JSON object which includes a "responseCode" (an integer referring to a Handle protocol response code), an echo of the "handle" resolved, and either a list of "values" or, in the case of an error, an optional "message" which is a string describing the error. 
+
+Each value is a JSON object with generally 5 attributes:
+•"index" : an integer 
+•"type" : a string
+•"data" : an object, see below
+•"ttl" : the time-to-live in seconds of the value, an integer (or, in the rare case of an absolute expiration time, that expiration time as an ISO8601-formatted string)
+•"timestamp" : an ISO8601-formatted string
+
+Handle value data is an object with properties "format", a string, and "value".
+•If "format"="string", "value" is a string, representing the data as a UTF-8 string.
+•If "format"="base64", "value" is a string, with a BASE64 encoding of the data.
+•If "format"="hex", "value" is a string, with a hex encoding of the data.
+•If "format"="admin", "value" is an object, representing an HS_ADMIN value, with properties "handle" (a string), "index" (an integer), and "permissions" (a string, representing the bitmask of permissions).
+•If "format"="vlist", "value" is an list of objects, representing an HS_VLIST value; each object in the list has properties "handle" (a string) and "index" (an integer).
+•If "format"="site", "value" is an object, representing an HS_SITE value. As the structure of this object is complicated and generally of limited technical interest it is currently omitted from this documentation.
+
+Response Codes
+•1 : Success. (HTTP 200 OK)
+•2 : Error. Something unexpected went wrong during handle resolution. (HTTP 500 Internal Server Error)
+•100 : Handle Not Found. (HTTP 404 Not Found)
+•200 : Values Not Found. The handle exists but has no values (or no values according to the types and indices specified). (HTTP 200 OK)
+
+Query Parameters
+
+This DOI system Proxy Server REST API is CORS-compliant, however, JSONP callbacks are also supported using a "callback" query parameter.
+
+The presence of the "pretty" query parameter instructs the server to pretty-print the JSON output.
+
+The "auth" query parameter instructs the proxy server to bypass its cache and query a primary handle server directly for the newest handle data.
+
+The "cert" query parameter instructs the proxy server to request an authenticated response from the source handle server. Not generally needed by end users.
+
+The "type" and "index" query parameters allow the resolution response to be restricted to specific types and indexes of interest. Multiple "type" and "index" parameters are allowed and values are returned which match any of the specified types or indexes. For example,
+
+For example, http://doi.org/api/handles/10.1000/1?type=URL&callback=processResponse yields the response
+
+processResponse({
+  "responseCode": 1,
+  "handle": "10.1000/1",
+  "values": [
+    {
+      "index": 1,
+      "type": "URL",
+      "data": { "format": "string", "value": "http://www.doi.org/index.html" },
+      "ttl": 86400,
+      "timestamp": "2004-09-10T19:49:59Z"
+    }
+  ]
+});
+
+
+  
+
+ Logo 
+
+
+
+ 
+ HOME  | HANDBOOK  | FACTSHEETS  | FAQs  |  RESOURCES  | REGISTRATION AGENCIES  | NEWS  | MEMBERS AREA  
+ 
+
+ 
+  
+spacer 
+Factsheet
+
+DOI® Proxy Server System User Documentation
+
+ 
+
+1. Resolving Handles Using the Proxy Server System
+ 2. Encoding Handles for Use in URIs
+ 3. Proxy Server Query Parameters
+ 4. Proxy Server REST API 
+
+ 
+
+Note that this information, and additional information about the DOI Proxy Server System, Resolution and Numbering, can be found in the DOI Handbook.
+
+ 
+
+Users may resolve DOI names that are structured to use the DOI system Proxy Server (http://doi.org (preferred) or http://dx.doi.org). The resolution of the DOI name in this case depends on the use of URL syntax: the example DOI name doi:10.10.123/456 would be resolved from the address: "http://doi.org/10.123/456". Any standard browser encountering a DOI name in this form will be able to resolve it. The proxy service (both doi.org and dx.doi.org) is accessible over IPv6, and supports DNSSEC. The proxy servers respond to HTTPS as well as HTTP requests.
+
+ 
+
+1. Resolving DOIs using the Proxy Server System
+
+The DOI system uses the Handle System® to manage digital objects (see the DOI Factsheet "DOI System and the Handle System"). At the infrastructure level, DOI names are handles.
+
+The DOI system Proxy Server is basically a web server that knows how to talk to the Handle System, and at this writing, most DOI® names found on the web are embedded in URLs that use the proxy server for DOI name resolution. For any HTTP request that combines the proxy's domain name with a DOI name, for example 
+
+http://doi.org/10.1000/demo_DOI
+
+the proxy will query the Handle System for the DOI name, take the URL in the handle record (or if there are multiple URLs in the handle record it will select one, and that selection is in no particular order) and send an HTTP redirect to that URL to the user's web browser.
+
+Increasing numbers of DOI names include data in addition to the single default URL. This is sometimes referenced as multiple resolution. These added values are intended for use by more advanced applications which have the ability to take advantage of multiple pieces of data, e.g., the location of enhanced metadata or related documents.
+
+In addition to handle values of type URL, the proxy server understands values of handle value type 10320/loc. These values contain XML describing multiple redirection endpoints for the DOI name and conditions under which the proxy should use them. For further documentation see DOI Handbook Section 3.8.4.3, Resolution of Multiple URLs using the 10320/loc Handle Type.
+
+The proxy server is configured to display a "DOI Name Not Found" error page when queried for a DOI name that it cannot find.
+
+The DOI names 10.1000/demo_DOI and 10.1000/demo_DOI/ are both valid DOI names, but it is unlikely that a DOI name will be created with a trailing slash. If a resolution request for a DOI name with a trailing slash is received by the proxy server and that DOI name is not found, the proxy server will return an error report that includes a warning that the requested DOI name contained a trailing slash, and a link to click to resolve the same string without the slash.
+
+The DOI system Proxy Server is really multiple servers running at multiple locations, with the load distributed evenly across all servers. To speed resolution, the proxy servers cache handle values, with the TTL set to 24 hours. This means that if a handle value is changed, it can take up to 24 hours before the new value is returned.
+
+Note that the IDF also runs a proxy server for the shortDOI™ Service that is not part of this DOI system Proxy Server specification.
+
+ 
+
+2. Encoding DOIs for use in URIs
+
+The Handle System uses UTF-8, a Unicode implementation, and has no character set constraints. But the DOI system Proxy Server is a web server that sends redirects to web browsers using HTTP syntax, so characters in DOI names that may not be interpreted correctly by web browsers, for example '?', should be avoided or encoded. A non-ASCII character in a DOI name should be converted to UTF-8, and each UTF-8 byte that isn't ASCII should be %encoded.
+
+The "#" is another example. Only if you send the DOI system Proxy Server the DOI name
+
+10.1000/res#test
+
+encoded as
+
+http://doi.org/10.1000/res%23test
+
+will the proxy correctly resolve the DOI name. If it is not encoded, #test will be treated as a fragment and removed by the web browser before it gets to the proxy, which will then attempt to resolve  10.1000/res instead.
+
+Tables 1 and 2 summarize the encoding guidelines for DOI. URLs have the most restricted set of characters. Table 1 lists the characters that should always be hex encoded. Table 2 lists additional characters where it is recommended that characters be replaced by hex-encoding. The distinction between the lists is between practical experience with current web browsers and the more formal specification of URL syntax. In the DOI Directory all characters represent themselves.
+
+Table 1: Mandatory Encoding 
+
+
+Character Encoding 
+% (%25) 
+" (%22) 
+# (%23) 
+SPACE (%20) 
+? (%3F) 
+
+Table 2: Recommended Encoding 
+
+
+Character Encoding 
+< (%3C) 
+> (%3E) 
+{ (%7B) 
+} (%7D) 
+^ (%5E) 
+[ (%5B) 
+] (%5D) 
+` (%60) 
+| (%7C) 
+\ (%5C) 
++ (%2B) 
+
+Note also that web browser treatment of "/./" and "/../" can be inconsistent. It is recommended that one of the slashes be percent encoded, e.g., change "/./" to "/.%2F" and "/../" to "/..%2F". 
+
+ 
+
+3. Proxy Server query parameters
+
+noredirect
+
+Do not redirect using URL or 10320/loc values; display handle values instead.
+
+ignore_aliases
+
+Ordinarily the proxy will take a handle value of type HS_ALIAS to be a handle that should be resolved instead of the input handle; with this parameter values of type HS_ALIAS are ignored.
+
+auth
+
+Authoritative query. The proxy will bypass its cache and resolve the handle at an authoritative server.
+
+cert
+
+Certified query. The proxy will require an authenticated response from the handle server. Not generally needed by end users.
+
+index
+
+Only resolve the handle value at the specified index. May be repeated to resolve multiple indices.
+
+type
+
+Only resolve handle values of the specified type. May be repeated to resolve multiple types.
+
+urlappend
+
+The value of this parameter is appended to the end of the URL used for redirection.
+
+locatt=key:value
+
+For multiple redirection; specifies a key:value pair to determine the choice of redirection from 10320/loc values.
+
+action=showurls
+
+For multiple redirection; returns an XML representation of the possible redirect locations.
+
+nols=y
+
+Some libraries and other institutions use a special cookie to cause the DOI system Proxy Server to redirect users to an "appropriate copy" using a local service. For example users may be redirected to the full text of a journal article already purchased by the library, instead of a landing page indicating a fee. Users can add the "nols=y" query parameter to prevent the local service redirect.
+ 
+ 
+
+4. Proxy Server REST API
+
+The DOI system Proxy Server REST API allows programmatic access to DOI name resolution using HTTP.
+
+Example Request/Response
+
+A REST API request can be made by performing a standard HTTP GET of
+
+/api/handles/<handle>
+
+The API returns JSON.
+
+For example, http://doi.org/api/handles/10.1000/1 yields the response
+
+{
+  "responseCode": 1,
+  "handle": "10.1000/1",
+  "values": [
+    {
+      "index": 100,
+      "type": "HS_ADMIN",
+      "data": {
+        "format": "admin",
+        "value": {
+          "handle": "0.NA/10.1000",
+          "index": 200,
+          "permissions": "011111111111"
+        }
+      },
+      "ttl": 86400,
+      "timestamp": "2000-04-13T15:08:57Z"
+    },
+    {
+      "index": 1,
+      "type": "URL",
+      "data": { "format": "string", "value": "http://www.doi.org/index.html" },
+      "ttl": 86400,
+      "timestamp": "2004-09-10T19:49:59Z"
+    }
+  ]
+}
+
+
+Response Format
+
+The response is a JSON object which includes a "responseCode" (an integer referring to a Handle protocol response code), an echo of the "handle" resolved, and either a list of "values" or, in the case of an error, an optional "message" which is a string describing the error. 
+
+Each value is a JSON object with generally 5 attributes:
+•"index" : an integer 
+•"type" : a string
+•"data" : an object, see below
+•"ttl" : the time-to-live in seconds of the value, an integer (or, in the rare case of an absolute expiration time, that expiration time as an ISO8601-formatted string)
+•"timestamp" : an ISO8601-formatted string
+
+Handle value data is an object with properties "format", a string, and "value".
+•If "format"="string", "value" is a string, representing the data as a UTF-8 string.
+•If "format"="base64", "value" is a string, with a BASE64 encoding of the data.
+•If "format"="hex", "value" is a string, with a hex encoding of the data.
+•If "format"="admin", "value" is an object, representing an HS_ADMIN value, with properties "handle" (a string), "index" (an integer), and "permissions" (a string, representing the bitmask of permissions).
+•If "format"="vlist", "value" is an list of objects, representing an HS_VLIST value; each object in the list has properties "handle" (a string) and "index" (an integer).
+•If "format"="site", "value" is an object, representing an HS_SITE value. As the structure of this object is complicated and generally of limited technical interest it is currently omitted from this documentation.
+
+Response Codes
+•1 : Success. (HTTP 200 OK)
+•2 : Error. Something unexpected went wrong during handle resolution. (HTTP 500 Internal Server Error)
+•100 : Handle Not Found. (HTTP 404 Not Found)
+•200 : Values Not Found. The handle exists but has no values (or no values according to the types and indices specified). (HTTP 200 OK)
+
+Query Parameters
+
+This DOI system Proxy Server REST API is CORS-compliant, however, JSONP callbacks are also supported using a "callback" query parameter.
+
+The presence of the "pretty" query parameter instructs the server to pretty-print the JSON output.
+
+The "auth" query parameter instructs the proxy server to bypass its cache and query a primary handle server directly for the newest handle data.
+
+The "cert" query parameter instructs the proxy server to request an authenticated response from the source handle server. Not generally needed by end users.
+
+The "type" and "index" query parameters allow the resolution response to be restricted to specific types and indexes of interest. Multiple "type" and "index" parameters are allowed and values are returned which match any of the specified types or indexes. For example,
+
+For example, http://doi.org/api/handles/10.1000/1?type=URL&callback=processResponse yields the response
+
+processResponse({
+  "responseCode": 1,
+  "handle": "10.1000/1",
+  "values": [
+    {
+      "index": 1,
+      "type": "URL",
+      "data": { "format": "string", "value": "http://www.doi.org/index.html" },
+      "ttl": 86400,
+      "timestamp": "2004-09-10T19:49:59Z"
+    }
+  ]
+});
+
+
+  
+
+ Logo 
+
+
+
+ 
+ HOME  | HANDBOOK  | FACTSHEETS  | FAQs  |  RESOURCES  | REGISTRATION AGENCIES  | NEWS  | MEMBERS AREA  
+ 
+
+ 
+Table of Contents    Previous Chapter: 2 Numbering    Next Chapter: 4 Data Model 
+
+ 
+
+3 Resolution
+
+ 
+
+This chapter explains the resolution component of the DOI® System and its ability to provide persistent association of the identifier and related data. The chapter describes in outline the Handle System® used for DOI name resolution.
+
+© International DOI Foundation  •   Last updated: August 7, 2014
+
+ 
+
+3.1 Resolution
+3.2 Simple resolution
+3.3 Multiple resolution
+3.4 Resolution requirements for the DOI system
+3.5 Handle® System technology
+       3.5.1 Overview
+       3.5.2 Technical support of DOI name resolution
+       3.5.3 Software support for use of DOI names
+3.6 The maintenance of DOI name "state data"
+3.7 Resolution interface with Handle System 
+       3.7.1 Custom Resolution Software
+       3.7.2 Native resolver
+       3.7.3 Proxy server
+       3.7.4 Proxy validation, monitoring, and reporting
+       3.7.5 Other mechanisms
+3.8 DOI system Proxy Server technical details
+       3.8.1 Resolving DOIs Using the Proxy Server System
+       3.8.2 Proxy Server Query Parameters
+       3.8.3 Proxy Server REST API
+       3.8.4 Additional Functionality
+             3.8.4.1 Local Content Servers (The "Appropriate Copy" Problem)
+             3.8.4.2 Parameter Passing
+             3.8.4.3 Resolution of Multiple URLs using the 10320/loc Handle Type 
+
+ 
+ 
+3.1 Resolution
+
+Resolution is the process in which an identifier is the input — a request — to a network service to receive in return a specific output of one or more pieces of current information (state data) related to the identified entity: e.g., a location (URL). Multiple resolution, that is made possible by the Handle System used as the DOI resolution component, is the return as output of several pieces of current information related to a DOI-identified entity — specifically at least one URL plus defined data structures allowing management.
+
+In the case of the DOI® System, using the Handle System® as a reference implementation, the resolution is from a DOI name, e.g., 10.1000/140, to one or more (hence "multiple") pieces of typed data: e.g. URLs representing instances of (manifestations of) the object, or services such as email, or one or more items of metadata. New types can be added at any time, making the DOI resolution system extremely flexible and responsive to new requirements. Resolution can be considered as a mechanism for maintaining a relationship between two data entities; an item of metadata is a relationship that someone claims exists between two entities: therefore, such metadata relationships between entities may be articulated and automated by resolution.
+
+Using multiple resolution, a DOI name can be resolved to an arbitrary number of different associated values: multiple URLs, other DOI names, or other data types representing items of metadata. Resolution requests may return all associated values of current information, or all values of one data type; these returned values might then be further processed in a specific "client" software application. At its simplest, the user may be provided with a list of options; more sophisticated automated processes would allow for the automated choice of an appropriate value for further processing.
+
+ 
+
+3.2 Simple resolution
+
+A DOI name persistently identifies a specific intellectual property entity (object), which may or may not be an Internet-accessible file. The URL provides a specific address on the Internet, related to the entity. These applications of identification are completely different: the first identifies an entity; the second identifies a location (where a specific entity may or may not be found). 
+
+The earliest application of the DOI system was for simple, single point resolution, providing a persistent identifier (avoiding "404 not found" messages). Each DOI name has a single URL to which it can resolve. This allows the location of an entity to be changed while maintaining the name of the entity as an actionable identifier, by actively managing in the DOI record the link between a DOI and the URL to which it is resolved. See Chapter 5, Applications, for further information. Lack of persistence of a URL is only the first — and the simplest — challenge that the DOI system was designed to manage.
+
+ 
+
+3.3 Multiple resolution
+
+Multiple resolution allows one entity to be resolved to multiple other pieces of data or entities. 
+
+Resolution of a DOI name can include, but is not restricted to, resolution to associated values such as a location (URL), an e-mail address, another DOI name and descriptive metadata. The referent can be of various types (e.g. abstract "works", physical "manifestations", or performances) and are not always directly accessible in the form of a digital file or other manifestation; i.e. resolution might or might not return an instance of the object. Resolution can also involve one or more intermediate mapping operations.
+
+DOI resolution records can include one or more URLs, where the object can be located, and other information provided about the object to which a DOI name has been assigned, optionally including but not restricted to:
+•names
+•identifiers
+•descriptions
+•types
+•classifications
+•locations
+•times
+•measurements
+•relationships to other entities
+
+Through automated multiple resolution a DOI name can be resolved to an arbitrary number of different points on the Internet: multiple URLs, other DOI names, and other data types. If the DOI name can point to many different possible "resolutions", how is the choice made between different options? At its simplest, the user may be provided with a list from which to make a manual choice. However, this is not a scalable solution for an increasingly complex and automated environment. The DOI system enables automation of "service requests", through which users (and, more importantly, users' application software) can be passed seamlessly from a DOI name to the specific service that they require.
+
+multiple_resolution
+
+ Figure 1: Automated Selection of Data by a Service 
+
+See below, 3.8.4.3 Resolution of Multiple URLs, and also Chapter 5, section 5.3 Multiple Resolution Applications for details of current technical implementations of multiple resolution. 
+
+ 
+
+3.4 Resolution requirements for the DOI system
+
+ISO 26234 contains the following functional requirements to be met by resolution in the DOI system:
+
+The technology deployed to manage the resolution of the DOI name shall support the functions listed in a) to l) as follows.
+a.Internet compatible: transmission via the global information system that is logically linked by a globally unique address space and communications.
+b.First class naming: identifiers resolved by the system shall have an identity independent of any other object.
+c.Unique identification: the specification by an identifier string of one and only one referent.
+d.Functional granularity: it shall be possible to separately resolve an object whenever it needs to be distinguished.
+e.such that data values with similar constraints can be grouped and treated in the same way (e.g. for application profile definition).
+f.Multiple resolution: the simultaneous return as output of several pieces of current information related to the object, in defined typed data structures. Resolution requests should be capable of returning all associated values of current information, individual values or all values of one data type.
+g.Designated authority: the administrator of an identifier shall be securely identified and capable of transfer.
+h.Appropriate access to resolution records: changes to a resolution record shall be recorded and shall be capable of providing access to the data on which the administrator depends and privacy and confidentiality from those who are not dependent on it.
+i.DNS independent but compatible: not reliant on the Domain Name System (DNS), but capable of working with DNS domain naming and resolution services.
+j.Granularity of administration: DOI names can be administered individually or in groups.
+k.Scalability:
+1.efficient and infinitely scalable protocol;
+2.no limitations on absolute number of identifiers assigned or length of identifier string.
+l.Unicode compliant.
+
+ 
+
+3.5 Handle® System technology
+
+ 
+
+3.5.1 Overview
+
+The Handle System technology developed by CNRI was selected for the resolution task within the DOI system because it matched the resolution requirements identified for the DOI concept, by offering a number of real advantages over other available technologies:
+•Multiple resolution capability
+•Scalability
+•Reliability
+•Resolution speed
+•Proven usage in several digital library projects
+•Already implemented and supported in several practical systems
+•A commitment by its developers to open standards, and
+•A commitment to further development
+
+Resolution to multiple, extensible, types of data is a feature of the Handle System technology. While the Handle System has no pre-existing constraints, the DOI system is an application of the Handle System which adds specific constraints appropriate to managing objects of interest for intellectual property transactions and related matters, such as defined metadata elements and operating policies. The Handle System is the resolution component of the Digital Object Architecture, designed to enable information to be managed in a network over long periods of time. The other components of the DO Architecture (Repository and Registry components) are not part of the DOI system, though some DOI implementations may choose to make use of them. (See Chapter 5, Applications, Section 5.7)
+
+The Handle System is made up of local handle services. A local handle service (LHS) is made up of one or more sites, and a site is made up of one or more handle servers. Handle servers store handles. One local handle service is unique, the Global Handle Registry®: the handles it stores, which are the "prefix" handles, makes it the LHS to query to find out which services store all the other handles. DOI names make exclusive use of the assigned prefix 10 as part of the Handle syntax, and are also distinguished from other handles by use of the totality of the DOI system described in this Handbook.
+
+For further information on the DOI use of Handle, see the factsheet DOI System® and the Handle System®. For further information on the Handle System, see the General and Technical FAQs about the Handle System and the Handle.net Software.
+
+ 
+
+3.5.2 Technical support of DOI name resolution
+
+CNRI continue to provide technical and operational support for the DOI system as a contractor. Further details of the relevant Agreement for Technical Services are available to potential and current Registration Agencies.
+
+ 
+
+3.5.3 Software support for use of DOI names
+
+See DOI Tools for a current list of tools that are in use and under development, with descriptions and links to their sources.
+
+CNRI provide servlets and tools that some users and programmers may find useful. (Contact the Handle System Administrator at hdladmin@cnri.reston.va.us for information) These include:
+
+net.handle.batch.DOIBatch
+
+A batch loader for DOI names.
+
+net.handle.apps.admin_servlets
+
+The servlets used for administering handles via the web, useful if you'd like to allow DOI name administration from a local web server.
+
+net.handle.apps.simple
+
+If you do decide to roll your own handle software, this package has a number of examples of how to use the handle client library.
+
+net.handle.apps.tools, net.handle.apps.site_tool
+
+A number of utilities for low-level maintenance of a handle server. Make sure to check there before writing anything along these lines yourself.
+
+Application Programming Interfaces (APIs)
+
+In addition to Java, libraries are available for Python, Perl, and C. DOI system specific libraries are being developed for the Acrobat/DOI System services prototype.
+
+ 
+
+3.6 The maintenance of DOI name "state data"
+
+The effective operation of the DOI system depends on accurate resolution of a DOI name to the appropriate URL or other data type. 
+
+DOI Data
+
+ Figure 2: DOI name record 
+
+The maintenance of the "state data" is an essential element of the responsibility of the Registrant of the DOI name. Only the Registrant or a service organization acting with the authority of the Registrant is permitted to maintain state data. More sophisticated models of permissions and access to DOI name state data records within a DOI name record are conceivable and the requirements for these are currently being investigated by the IDF.
+
+The data types to which a DOI name can resolve are fully extensible within the Handle System, to permit the DOI name to resolve to any data that is accessible on the Internet.
+
+For use with the data type URL (currently the most common application) we recommend that DOI name data be entered as a full path (e.g. http://www.somepublisher.com/photo/photo#1.gif), rather than a relative reference. Whilst a relative link could be used as the DOI name data, we cannot predict the context in which the DOI name will be resolved, i.e. what the current base html reference will be.
+
+A DOI name could resolve to a Java applet or a CGI script or other dynamic mechanism.
+
+ 
+
+3.7 Resolution interface with Handle System 
+
+Current Web browser technology requires additional functionality to allow the browser to deal with names of objects, rather than simple locations (a fact common to any approach to naming on the Web). Hence, in order to make full use of DOI name resolution functionality, additional browser features are necessary. It is anticipated that features supporting resolution will commonly be built into browsers in future, and the IDF is in active discussion to encourage this. The required functionality is currently provided in a number of ways. 
+
+ 
+
+3.7.1 Custom Resolution Software 
+
+The Handle System Client Library is freely available and can be used to develop new resolution clients as needed, either for individual applications or for use in completely separate systems. As resolution is freely available, this could be done entirely independently of the IDF, but we encourage developers to let us know about their applications in order that we may 1) let others know about it if it is public and 2) work with developers to improve their understanding of the DOI system and thus the success of their efforts. 
+
+ 
+
+3.7.2 Native resolver 
+
+A "resolver plug-in" is available from CNRI that enables a browser to resolve a DOI name in the form "doi:10.123/456" without using a proxy server. The user simply downloads and installs the plug-in and then "clicks" on the DOI name (or types the DOI name into the address line in their browser) and the DOI name is resolved directly. See Other HANDLE.NET®Software. 
+
+ 
+
+3.7.3 Proxy server  
+
+Alternatively, without the need to extend their web browsers' capability, users may resolve DOI names that are structured to use the DOI system Proxy Server (http://doi.org (preferred) or http://dx.doi.org). The resolution of the DOI name in this case depends on the use of URL syntax: the example DOI name we have been using (doi:10.10.123/456) would be resolved from the address: "http://doi.org/10.123/456". Any standard browser encountering a DOI name in this form will be able to resolve it. The proxy service (both doi.org and dx.doi.org) is accessible over IPv6, and supports DNSSEC.
+
+The use of the proxy server (the gateway between the Handle System and HTTP) does not interfere with the HTTP referrer field (that is, the source of the link is maintained, it does not appear as though the user is coming from doi.org or dx.doi.org instead of from the source). Nothing goes "through" that proxy server: it sends a redirect back to the original client with the current URL or other information relating to the handle resolution, and the final HTTP GET request comes from the user's client just as it otherwise would.
+
+DOI names used through a HTTP proxy server (in the "http://doi.org" formulation as a URL) will continue to be persistent. As long as (1) the core DOI system is maintained, that is, as long as a given DOI name (10.123/456) can be resolved using the Handle System, and (2) as long as the proxy server named doi.org is kept running, and (3) as long as the core network services that enable the http-based web to function remain in place, then a DOI name (http://doi.org/10.123/456) referenced through that proxy will remain persistent. The key to understanding why this is so is modularity. The core DOI name resolution service is used by the proxy but is not constrained by the proxy. Additional gateways could be built and additional methods could be used to access the core DOI name resolution system without interfering in any way with the ongoing operation of the doi.org proxy.
+
+Having created and advocated the use of the proxy, CNRI and IDF are committed to maintaining it in perpetuity, as it will be an essential component to maintaining the integrity of the millions of instances of DOI name-based web links. Maintaining the utility of those links over time will require maintaining both the core DOI system and the specific gateway service, doi.org, that those links reference and so use to gain access to the core DOI system. This, of course, is not at all unique and is just another variation on the Internet theme of layering services on top of one another. doi.org is itself dependent on the Domain Name System (DNS), which is itself dependent on IP addressing and routing, etc. This picture will probably grow more complex as time goes on (we hope it does), with the core DOI name resolution facilities used in multiple ways and by multiple services. OpenURL resolvers, for example, will find DOI names in their "raw" form, e.g., id=doi:10.123/456, and so could choose among using the doi.org proxy, or setting up their own web-to-DOI name proxy server(s), or using the handle protocol to query the DOI system directly.
+
+Related information on Proxy Policies for IDF Members and RAs is available.
+
+ 
+
+3.7.4 Proxy validation, monitoring, and reporting 
+
+A summary of proxy validation requirements, and monitoring and reporting policies, is available to IDF Members.
+
+ 
+
+3.7.5 Other mechanisms 
+
+The required functionality might also be delivered to a browser by means of a scripting feature, such as JavaScript. However, we do not encourage this for long range DOI system strategy, since scripting is unlikely to be assured of support by browsers in the medium to long term; for example, many security specialists are currently urging computer users to turn off JavaScript in their e-mail system preferences.
+
+For relevant applications, note also that DOI is a registered URI within the info-URI namespace (IETF RFC 4452, the "info" URI Scheme for Information Assets with Identifiers in Public Namespaces). See also the factsheet "DOI System and Internet Identifier Specifications".
+
+ 
+
+3.8 DOI system Proxy Server technical details
+
+Users may resolve DOI names that are structured to use the DOI system Proxy Server (http://doi.org (preferred) or http://dx.doi.org). The resolution of the DOI name in this case depends on the use of URL syntax: the example DOI name doi:10.10.123/456 would be resolved from the address: "http://doi.org/10.123/456". Any standard browser encountering a DOI name in this form will be able to resolve it. The proxy service (both doi.org and dx.doi.org) is accessible over IPv6, and supports DNSSEC. The proxy servers respond to HTTPS as well as HTTP requests.
+
+ 
+
+3.8.1. Resolving DOIs using the Proxy Server System
+
+The DOI system uses the Handle System® to manage digital objects (see the DOI Factsheet "DOI System and the Handle System"). At the infrastructure level, DOI names are handles.
+
+The DOI system Proxy Server is basically a web server that knows how to talk to the Handle System, and at this writing, most DOI® names found on the web are embedded in URLs that use the proxy server for DOI name resolution. For any HTTP request that combines the proxy's domain name with a DOI name, for example 
+
+http://doi.org/10.1000/demo_DOI
+
+the proxy will query the Handle System for the DOI name, take the URL in the handle record (or if there are multiple URLs in the handle record it will select one, and that selection is in no particular order) and send an HTTP redirect to that URL to the user's web browser.
+
+Increasing numbers of DOI names include data in addition to the single default URL. This is sometimes referenced as multiple resolution. These added values are intended for use by more advanced applications which have the ability to take advantage of multiple pieces of data, e.g., the location of enhanced metadata or related documents.
+
+In addition to handle values of type URL, the proxy server understands values of handle value type 10320/loc. These values contain XML describing multiple redirection endpoints for the DOI name and conditions under which the proxy should use them. For further documentation see Section 3.8.4.3 Resolution of Multiple URLs using the 10320/loc Handle Type.
+
+The proxy server is configured to display a "DOI Name Not Found" error page when queried for a DOI name that it cannot find.
+
+The DOI names 10.1000/demo_DOI and 10.1000/demo_DOI/ are both valid DOI names, but it is unlikely that a DOI name will be created with a trailing slash. If a resolution request for a DOI name with a trailing slash is received by the proxy server and that DOI name is not found, the proxy server will return an error report that includes a warning that the requested DOI name contained a trailing slash, and a link to click to resolve the same string without the slash.
+
+The DOI system Proxy Server is really multiple servers running at multiple locations, with the load distributed evenly across all servers. To speed resolution, the proxy servers cache handle values, with the TTL set to 24 hours. This means that if a handle value is changed, it can take up to 24 hours before the new value is returned.
+
+Note that the IDF also runs a proxy server for the shortDOI™ Service that is not part of this DOI system Proxy Server specification.
+
+ 
+
+3.8.2 Proxy Server query parameters
+
+noredirect
+
+Do not redirect using URL or 10320/loc values; display handle values instead.
+
+ignore_aliases
+
+Ordinarily the proxy will take a handle value of type HS_ALIAS to be a handle that should be resolved instead of the input handle; with this parameter values of type HS_ALIAS are ignored.
+
+auth
+
+Authoritative query. The proxy will bypass its cache and resolve the handle at an authoritative server.
+
+cert
+
+Certified query. The proxy will require an authenticated response from the handle server. Not generally needed by end users.
+
+index
+
+Only resolve the handle value at the specified index. May be repeated to resolve multiple indices.
+
+type
+
+Only resolve handle values of the specified type. May be repeated to resolve multiple types.
+
+urlappend
+
+The value of this parameter is appended to the end of the URL used for redirection.
+
+locatt=key:value
+
+For multiple redirection; specifies a key:value pair to determine the choice of redirection from 10320/loc values.
+
+action=showurls
+
+For multiple redirection; returns an XML representation of the possible redirect locations.
+
+nols=y
+
+Some libraries and other institutions use a special cookie to cause the DOI system Proxy Server to redirect users to an "appropriate copy" using a local service. For example users may be redirected to the full text of a journal article already purchased by the library, instead of a landing page indicating a fee. Users can add the "nols=y" query parameter to prevent the local service redirect.
+ 
+ 
+
+3.8.3 Proxy Server REST API
+
+The DOI system Proxy Server REST API allows programmatic access to DOI name resolution using HTTP.
+
+Example Request/Response
+
+A REST API request can be made by performing a standard HTTP GET of
+
+/api/handles/<handle>
+
+The API returns JSON.
+
+For example, http://doi.org/api/handles/10.1000/1 yields the response
+
+{
+  "responseCode": 1,
+  "handle": "10.1000/1",
+  "values": [
+    {
+      "index": 100,
+      "type": "HS_ADMIN",
+      "data": {
+        "format": "admin",
+        "value": {
+          "handle": "0.NA/10.1000",
+          "index": 200,
+          "permissions": "011111111111"
+        }
+      },
+      "ttl": 86400,
+      "timestamp": "2000-04-13T15:08:57Z"
+    },
+    {
+      "index": 1,
+      "type": "URL",
+      "data": { "format": "string", "value": "http://www.doi.org/index.html" },
+      "ttl": 86400,
+      "timestamp": "2004-09-10T19:49:59Z"
+    }
+  ]
+}
+
+
+Response Format
+
+The response is a JSON object which includes a "responseCode" (an integer referring to a Handle protocol response code), an echo of the "handle" resolved, and either a list of "values" or, in the case of an error, an optional "message" which is a string describing the error. 
+
+Each value is a JSON object with generally 5 attributes:
+•"index" : an integer 
+•"type" : a string
+•"data" : an object, see below
+•"ttl" : the time-to-live in seconds of the value, an integer (or, in the rare case of an absolute expiration time, that expiration time as an ISO8601-formatted string)
+•"timestamp" : an ISO8601-formatted string
+
+Handle value data is an object with properties "format", a string, and "value".
+•If "format"="string", "value" is a string, representing the data as a UTF-8 string.
+•If "format"="base64", "value" is a string, with a BASE64 encoding of the data.
+•If "format"="hex", "value" is a string, with a hex encoding of the data.
+•If "format"="admin", "value" is an object, representing an HS_ADMIN value, with properties "handle" (a string), "index" (an integer), and "permissions" (a string, representing the bitmask of permissions).
+•If "format"="vlist", "value" is an list of objects, representing an HS_VLIST value; each object in the list has properties "handle" (a string) and "index" (an integer).
+•If "format"="site", "value" is an object, representing an HS_SITE value. As the structure of this object is complicated and generally of limited technical interest it is currently omitted from this documentation.
+
+Response Codes
+•1 : Success. (HTTP 200 OK)
+•2 : Error. Something unexpected went wrong during handle resolution. (HTTP 500 Internal Server Error)
+•100 : Handle Not Found. (HTTP 404 Not Found)
+•200 : Values Not Found. The handle exists but has no values (or no values according to the types and indices specified). (HTTP 200 OK)
+
+Query Parameters
+
+This DOI system Proxy Server REST API is CORS-compliant, however, JSONP callbacks are also supported using a "callback" query parameter.
+
+The presence of the "pretty" query parameter instructs the server to pretty-print the JSON output.
+
+The "auth" query parameter instructs the proxy server to bypass its cache and query a primary handle server directly for the newest handle data.
+
+The "cert" query parameter instructs the proxy server to request an authenticated response from the source handle server. Not generally needed by end users.
+
+The "type" and "index" query parameters allow the resolution response to be restricted to specific types and indexes of interest. Multiple "type" and "index" parameters are allowed and values are returned which match any of the specified types or indexes. For example,
+
+For example, http://doi.org/api/handles/10.1000/1?type=URL&callback=processResponse yields the response
+
+processResponse({
+  "responseCode": 1,
+  "handle": "10.1000/1",
+  "values": [
+    {
+      "index": 1,
+      "type": "URL",
+      "data": { "format": "string", "value": "http://www.doi.org/index.html" },
+      "ttl": 86400,
+      "timestamp": "2004-09-10T19:49:59Z"
+    }
+  ]
+});
+
+
+
+ 
+
+3.8.4 Additional Functionality 
+ 
+Some additional functionality has been built into the DOI system Proxy Server to provide additional services for DOI system users who structure their DOI names to use the DOI Proxy Server.
+
+3.8.4.1 Local Content Servers (The "Appropriate Copy" Problem) 
+ 
+DOI names for articles in scholarly and technical journals generally resolve to the publishers' websites. Retrieving the articles from those websites typically requires a fee or a subscription. Libraries commonly purchase copies of journals to keep in their local collections for their users, and they often own or subscribe to multiple copies of journals. For those institutions' users, the address to which a DOI name should appropriately resolve depends on the location or affiliation of the user who is making the resolution request, and the appropriate choice is usually one of the institution's local copies.
+
+The International DOI Foundation, CrossRef, CNRI, libraries and library services providers came to refer to this as the "appropriate copy problem," and began collaborating on a solution and developing a prototype in 1999. (For details see D-Lib Magazine, September 2001, "Linking to the Appropriate Copy".)
+
+The combination of the DOI name resolution system, the CrossRef Metadata Database, and OpenURL provides a practical solution to the appropriate copy problem for libraries. The key components of this architecture are (1) local content servers that can match a query for an item to a library's appropriate copy; (2) a DOI name resolution system that can redirect a query to a local content server; (3) a way for the originator of the query to identify the appropriate local content server to the resolution system; and (4) a source of metadata about the item sufficient for the local content server to match the query to the appropriate copy. 
+
+The solution offered by CrossRef to its library affiliate members is as follows: users in a member institution click on a DOI name, and the DOI name and a cookie (previously set in the user's web browser through a "CookiePusher" mechanism) are sent to the DOI system proxy server. The proxy server recognizes the local content server identified in the cookie, constructs an OpenURL containing the DOI name, and sends it to the user's local resolver by way of an HTTP "redirect" to the user's browser. The local resolver sends the DOI name in OpenURL format to CrossRef. CrossRef returns metadata for the item named by the DOI name. The local content server recognizes this as a locally-held article, constructs a URL pointing to the item, and sends it to the user's browser as an HTTP "redirect".
+
+If the article is not locally-held, the local content server returns the request to the proxy server, with a flag set to indicate there is no local copy, and the proxy server resolves the DOI name as it ordinarily would, redirecting the user's browser to the publisher's site.
+
+For a complete description of this process and how libraries can participate in this local linking solution, see the documentation on local linking for CrossRef library affiliates on their website.
+
+The current solution is specific to CrossRef which, at the time of this writing, remains the source of most DOI names and associated metadata relevant to the problem. This situation is, however, changing with the continued growth of the DOI system and it is generally acknowledged that multiple sources of metadata will have to be accommodated in the future. This will require adjustments both in the DOI name resolution data and in the behavior of local content servers. The groups that came together to solve the initial "Appropriate Copy Problem" recognize this, have held preliminary discussions on the topic, and anticipate the need for additional collaborative efforts as the situation evolves.
+
+A "CookiePusher" mechanism (see D-Lib article for details) is used to set a cookie in the user's browser that is recognized by the proxy server and contains the URL to which the proxy server will redirect the DOI name resolution request. To prevent unauthorized users from setting cookies and redirecting traffic to their own personal resolvers, a BASE-URL list, containing the URLs of the authorized local content servers, is included in the CookiePusher. The BASE-URL can be the URL for a script or a directory, or even a top level domain, but it must be an OpenURL aware server. If the BASE-URL in the request is not in the list, the script will not set the cookie, but will return a "no cookie for you" message. BASE-URLs are collected from CrossRef affiliates when they join. 
+
+The CookiePusher script runs on the DOI system website (http://www.doi.org). The proxy server (http://doi.org (preferred) or http://dx.doi.org) is under the DOI.ORG® domain. The URL for the CookiePusher script is:
+
+http://www.doi.org/cgi-bin/pushcookie.cgi
+
+A sample request to the CookiePusher containing the URL prefix of the local content server is:
+
+http://www.doi.org/cgi-bin/pushcookie.cgi?BASE-URL=http%3A//university.library.edu%3A9003/local_linking/
+
+URI hexadecimal (%) encoding is recommended.
+
+The request to add the cookie to the user's web browser's cookie file is usually hidden from view on an introductory or login web page, using a transparent GIF. 
+
+<img src="http://www.doi.org/cgi-bin/pushcookie.cgi?BASE-URL=
+http%3A//university.library.edu%3A9003/local_content_server/">transparent.gif</img>
+
+A sample cookie, with a TTL of 24 hours, is:
+
+Name: Demo-OpenURL
+ Information: \"http://university.library.edu:9003/local_content_server"
+ Domain: .doi.org
+ Path: /
+ Server Secure: no
+ Expires: Wednesday, October 23, 2013 10:28:11 PM 
+
+After the cookie is set, the proxy server will recognize the local content server identified in the cookie, construct an OpenURL containing the local content server URL and the DOI name:
+
+http://university.library.edu:9003/local_content_server/openurl?doi=10.1000/demo_DOI
+
+and send the request by way of an HTTP "redirect" to the local content server.
+
+If there is no local copy of the content, the local server must return the request to the proxy server with a "nols=y" flag set. The proxy server will then resolve the DOI name and direct the user to the publisher's content. (The deprecated setting "nosfx=y" used in the prototype is still supported.) Correctly setting the "no local service" flag is critical to avoiding infinite loops.
+
+http://doi.org/openurl?id=doi:10.1000/demo_DOI&nols=y
+
+3.8.4.2 Parameter Passing 
+ 
+Before the DOI system and CrossRef came into existence, the scholarly publishing community implemented bilateral linking agreements that used parameters (name/value pairs) included in standard URLs to exchange data. This practice enabled them to gather information about requests coming to their sites, such as which other publisher's site a request came from, and from which journal and article. They could then implement special access rules, or establish pricing for their content based on who was requesting it.
+
+At the time that the publishers began using DOI names, they also began thinking about how DOI names and the DOI system's proxy server could be used to facilitate the exchange of parameters, and remove the need for individual bilateral linking arrangements. A procedure, evolved over several years time, was agreed on by publishers who are now members of CrossRef, implemented in the proxy server, and has come to be called 'Parameter Passing'.
+
+In Parameter Passing, there are two URLs involved, both of which may be query strings and/or include parameters: (1) the resolution request sent by the 'referrer' to http://doi.org/ that has the DOI name, and (2) the URL associated with that DOI name, registered in the DOI system by the 'referent'. Parameter Passing requires joining the query strings of those two URLs together to form an 'out-bound' link. The names of the parameters used in both strings must be unique and defined for all parties. The OpenURL Format was chosen for the URLs because it specifies a set of parameter names that can be used to eliminate the chance of naming conflicts.
+
+The DOI system proxy server accepts a resolution request in the form of an OpenURL. For example:
+
+http://doi.org/openurl?url_ver=z39.88-2003&rfr_id=ori:rid:crossref.org&rft_id= doi:10.1256/003590&rfr_dat=cr_setver%3d01%26cr_pub%3dSource%20Publisher%26cr_work%3dSource %20Journal%20Title%26cr_src%3dSRC-NAME
+
+would be recognized by the proxy server as a Parameter Passing request. It will resolve the DOI name, and then check the domain of the URL against an 'opt-in' list that identifies organizations participating in Parameter Passing.
+
+If the URL is in the opt-in list, the proxy server will construct a new URL as follows:
+
+•Replace the registered URL's domain name and/or port number with different values, if replacements are specified in the opt-in list.
+•Move all the parameters from the in-bound link to the out-bound link, except for the rft_dat parameter.
+•For the rft_dat parameter, if the registered URL is an OpenURL, move the rft_dat parameter to the out-bound link. If it is not already in OpenURL format, hexencode the entire query string in the URL and place it into the out-bound link as the value of the rft_dat parameter.
+
+The referent is assumed to have implemented a service capable of using the nested parameters. The assumption is that by agreeing to participate in Parameter Passing, a publisher will accept any and all parameters identified in the Common CrossRef Parameter Set. 
+
+Changes to parameters resulting from changes to the OpenURL format, or from changes in requirements of Parameter Passing participants, are discussed in the CrossRef Help documentation.
+
+3.8.4.3 Resolution of Multiple URLs using the 10320/loc Handle Type	 
+
+One of the primary uses of the DOI system Proxy Server, or a web browser plug-in, is to resolve a DOI name (handle) to get a URL for a resource. For DOI names with multiple URL values, the proxy servers (at http://doi.org, and also the one at http://hdl.handle.net) simply select the first URL value in the list of values returned by the DOI name resolution. Because the order of that list is nondeterministic, there is no intelligent selection of a URL to which the client would be redirected. To improve the selection of specific resource URLs from handles and DOI names that contain multiple URLs, and to add features to the handle-to-URL resolution process, the 10320/loc handle value type was developed. 
+
+Background
+
+Every handle, and thus every DOI name, has a set of values assigned to it, and each of those values has a type that defines the syntax and semantics of the data. Some of the typed values are for administration: owner or creation date. The others are for client use: URL strings or email addresses, or complex data types such as binary data, XML code, or other handles.
+
+To avoid conflicts for clients if users assign types that are not registered and recognized across the user community, types are being assigned their own handles so that they can be defined and registered in the Handle System, a process that is currently under development. The prefix '10320', an arbitrary five digit string, has been set aside by the Handle System administrator for identifying handle types. For type 10320/loc, the suffix 'loc' is simply short hand for location.
+
+Attributes
+
+Type 10320/loc specifies an XML-formatted handle value that contains a list of locations. Each location has a set of associated attributes that help determine if or when that location is used. The overall list of locations can include hints for how the resolving client should select a location, including an ordered set of selection methods. The proxy servers (or any other resolution client) can apply each known selection method, in order, to choose a location based on the resolver's context (the HTTP request in the case of the Proxy Server) and the attributes of each location.
+
+The attributes for the set of locations, as well as each location entry in the set, are open-ended to allow for future capabilities to be added in a backwards-compatible way. A small number of attributes have been defined as "standard" that all resolvers should understand.
+
+At the top level of the XML structure are the following defined attributes:
+
+chooseby (optional)
+
+The chooseby attribute identifies a comma-delimited list of selection methods. If no chooseby attribute is specified then the default (currently "locatt,country,weighted") is assumed.
+
+For each location the following attributes are defined:
+
+href (required)
+
+The URL for the location.
+
+weight (optional)
+
+The weight (from zero to one) that should apply to this location when performing a random selection. Setting the weight attribute to zero results in the location not being selected unless a) it is explicitly referenced by another attribute; b) there are no other suitable locations; or c) the location is selected based on one of the other selection methods, such as country or language. If a location has no weight attribute then it is assumed to have a weight of one.
+
+Selection Methods
+
+The currently defined selection methods are:
+
+locatt
+
+Selects only locations from an attribute passed in the Proxy/DOI name-URI link. If someone constructs a link as doi:10.123/456?locatt=id:1 then the resolver will return the locations that have an "id" attribute of 1 (i.e., the second location in the resolution example below).
+
+country
+
+Selects only locations that have a 'country' attribute matching the country of the client. If no matching locations are found then this selects locations that have no country attribute (i.e., not a mismatch). The http://hdl.handle.net and http://doi.org Proxies determine the country of the client using a GeoIP lookup.
+
+weight
+
+Selects a single location based on a random choice. The Proxy will observe the 'weight' attribute for each location, which should be a floating point non-negative number. The weighting allows for a very basic load balancing, but is also a way to ensure that some locations can only be addressed directly (for example by country or locatt/attributes). If the weighted selection method is applied to locations that all have non-positive weights, then this selects one of the remaining locations randomly while disregarding location weights.
+
+The Proxy will iterate over the known selection methods, in order, until a single location has been selected. After each iteration the Proxy will take one of four steps:
+
+•if there is only one remaining location element, it is returned as a redirect;
+•if there are no remaining location elements, the Proxy reverts to the location elements as they were before the last method was applied;
+•if there are multiple location elements the Proxy will apply the remaining selection methods to those locations;
+• if there are no more selection methods to try, the weighted random selection method is applied, which is guaranteed to return a single location. In a sense, the weighted random is always the "fallback".
+
+Resolution
+
+For references to DOI name 10.123/456, with a value type 10320/loc that has this list of location attributes:
+
+      <locations>
+         <location id="0" href="http://uk.example.com/" country="gb" weight="0" />
+         <location id="1" href="http://www1.example.com/" weight="1" />
+         <location id="2" href="http://www2.example.com/" weight="1" />
+       </locations>
+
+
+the following selections could be made:
+
+
+Reference: 10.123/456 from a client located in the UK
+Result: The "country" selection method selects the first location based on the 'country' attribute of the first location and the client's position.
+
+Reference: 10.123/456 from a client located outside the UK
+Result: The "country" selection method removes the first location from consideration based on its 'country' attribute and chooses one of the last two locations using the "weighted" random selection method.
+
+Reference: 10.123/456?locatt=id:1
+Result: The second location is used based on the "locatt" selection method and the 'id' attribute.
+
+Reference: 10.123/456?locatt=id:0
+Result: The first location is used based on the "locatt" selection method and the 'id' attribute. The resolver never gets to the "country" selection method as the "locatt" selection method resulted in only a single matching location.
+
+Reference: 10.123/456?locatt=country:uk
+Result: The first location is used based on the "locatt" selection method and the 'country' attribute.
+
+Reference: 10.123/456?locatt=country:us 
+Result: The "country" selection method removes the first location from consideration based on its 'country' attribute, finds no US-specific location, and chooses one of the last two locations using the "weighted" random selection method.
+
+Specific Use Case – CrossRef
+
+The DOI name 10.1177/1522162802239753, was assigned to an article in the journal Graft: Organ and Cell Transplantation, which has ceased publication. The DOI name was updated to point to two archiving services that offer the article.
+
+A 10320/loc type containing the following information was added to the record, to be used by the Proxy for redirection:
+
+
+      <locations chooseby="locatt,country,weighted">
+         <location id="1" cr_type="MR-LIST"
+                   href="http://mr.crossref.org/iPage?doi=10.1177%2F1522162802239753" weight="1" />
+         <location id="2" cr_src="clockss_su" label="CLOCKSS_SU" cr_type="MR-LIST" 
+                  href="http://graft.edina.clockss.org/cgi/reprint/6/1/18" weight="0" />
+         <location id="3" cr_src="clockss_edina" label="CLOCKSS_Edina" cr_type="MR-LIST" 
+                  href="href="http://graft.edina.clockss.org/cgi/reprint/6/1/18" weight="0" />
+       </locations> 
+ 
+
+The 'chooseby' attributes (locatt,country,weighted) are the default set. In this example, the evaluation falls through the first two and the Proxy uses 'weighted' as the selection criteria. The first location (mr.crossref.org) wins with a weight of 1. The Proxy redirects to mr.crossref.org which in this example is a script on the CrossRef site that builds the page a user sees when resolving the DOI name in the form of:
+
+http://doi.org/10.1177/1522162802239753
+
+The resulting page shows that two archive services offer the article for download. The 10320/loc data at id="2" and id="3" is used by the CrossRef script to display two sources from one of the services.
+
+The general mechanism could be used in many different configurations, including building a link that specified an attribute of one of the two locations as a parameter, in which case the user would simply be redirected there in the usual fashion, without being shown the CrossRef-built multi-resolution page. The original URL serves as a fall back for older proxies or plug-ins that don't understand 10320/loc.
+
+ 
+
+Previous Chapter: 2 Numbering    Next Chapter: 4 Data Model 
+
+
+
+
+ 
+
+    CrossRef Support 
+
+
+Home
+Forums
+Documentation
+Submit a request
+Check your existing requests
+
+
+
+
+
+ 
+
+
+   
+   
+   
+  
+   
+ Print  
+   
+  
+   
+ View  
+   
+ 
+   
+   
+   
+ 
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
+   
+   
+
+
+
+
+   
+   
+   
+
+
+
+
+
+
+
+
+Help Center
+
+
+Home
+
+
+
+About CrossRef DOIs
+
+
+What is a DOI
+
+
+
+Who uses CrossRef DOIs
+
+
+
+Examples of DOI use
+
+
+
+How do CrossRef DOIs work?
+
+
+
+
+Getting Started
+
+
+
+Depositing DOIs and metadata
+
+
+
+Queries & retrieving metadata
+
+
+
+Maintaining & working with DOIs
+
+
+
+User Interfaces
+
+
+
+Machine Interfaces / APIs
+
+
+
+Advanced topics
+
+
+Passing parameters
+
+
+
+
+
+
+
+PatientInform
+
+
+
+
+
+
+
+Content negotiation
+
+
+
+
+CrossRef Services
+
+
+
+CrossRef Schema
+
+
+
+Guidelines, Policies, and FAQs
+
+
+
+
+
+
+
+
+Table of Contents
+Index
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Passing parameters
+
+Parameter passing permits data placed on an outbound DOI link to pass along to the target publisher. There are two procedures for passing parameters: The first uses an undocumented feature of the DOI resolver while the second is a robust implementation based on OpenURL structured to prevent name collisions that would result in the loss of data.
+
+Procedure 1
+
+For very limited situations where parameter passing is needed, you can use the name-value pair called "urlappend". You can construct outbound links by placing parameter values in this single URL variable. However, before constructing the link, you must know if the registered URL for the DOI already has parameters.
+
+For example, suppose DOI 10.5555/unique_doi_060103-01 has no parameters on its registered URL. You can then pass parameters as follows:
+
+http://dx.doi.org/10.5555/unique_doi_060103-01?urlappend=%3fpassed_param=<VALUE>
+
+DOI 10.5555/unique_doi_060103-01 does have parameters on its registered URL , passed parameter are added as follows:
+
+http://dx.doi.org/10.5555/unique_doi_060103-01?urlappend=%26passed_param=<VALUE>
+
+Because the urlappend function is primitive, you must insert the correct character—either a question mark (%3F) or an ampersand (%26)—before the name-value pair information you want to pass. In addition, if the target's publisher is not be expecting incoming parameters, the values placed in urlappend may conflict with names of parameters already on the registered URL.
+
+Procedure 2
+
+This more robust solution based on OpenURL is a bit more complicated, but it has several advantages:
+◾ It works whether or not the DOI's registered URL already has parameters.
+◾ It prevents parameter name collisions.
+◾ It lets the recipient of the link (the host of the target) control whether it receives passed parameters.
+◾ It establishes a common vocabulary for passed parameters, reducing the need for bi-lateral coordination.
+
+OpenURL 1.0 defines a set of parameters to use when conveying information in a hyperlink. Procedure 2 depends on two of these parameters—rft_dat and rfr_dat—to act as wrappers for both the passed parameters and the existing parameters on the DOI's registered URL. Parameter rft_dat (referent data) contains the entire registered URL's parameter set as a nested string. Parameter rfr_dat (referrer data) contains another nested string with the information the source wants to pass to the target. Data inside the rfr_dat should conform to the controlled vocabulary described in the Parameter Passing white paper (PDF). Because the DOI's registered URL parameters are safely nested inside rft_dat, parameter passing also forwards any non-OpenURL parameters found on the source link to the target.
+
+CrossRef strongly encourages the use of rfr_dat due to the controlled vocabulary.
+
+For example, this in-bound link:
+
+http://dx.doi.org/openurl?url_ver=Z39.88-2003&rft_id=doi:10.5555/unique_doi_060103-01&rfr_dat=rfr_dat=cr_setver=01&cr_pub=Source Publisher&cr_work=Source Journal Title&cr_src=SRC-NAME
+
+is combined with the registered URL:
+
+http://www.crossref.org/paramEcho?param=done&param2=two
+
+to create the following outbound link:
+
+http://www.crossref.org/paramEcho?url_ver=Z39.88-2003&rft_id=doi:10.5555/unique_doi_060103-01&rft_dat=param1=done&param2=two&rfr_dat=rfr_dat=cr_setver=01&cr_pub=Source Publisher&cr_work=Source Journal Title&cr_src=SRC-NAM
+
+For readability, this example is not shown in encoded form. If they were, the rft_dat portion would look like this: rft_dat=param1%3Ddone%26param2%3Dtwo.
+
+More Examples
+
+Example 1
+
+This link uses a DOI without parameter passing:
+
+http://dx.doi.org/10.5555/unique_doi_060103-01
+
+The target system would receive the following incoming information:
+
+(name) param1 (value) one (name) param2 (value) two -----------------Using request.getParameter()
+
+where the values of param1 and param2 are part of the URL registered for the DOI.
+
+Example 2
+
+This link uses the same DOI with parameter passing:
+
+http://dx.doi.org/openurl?url_ver=Z39.88-2003&rft_id=doi:10.5555/unique_doi_060103-01&rfr_data=stuff%3dgood
+
+The source of the link wants to send the name-value pair of stuff=good to the target system. The param1 and param2 variables are still passed to the target, as shown here, but they are wrapped inside the rft_dat parameter:
+
+(name) url_ver (value) Z39.88-2003 (name) rft_id (value) doi:10.5555/unique_doi_060103-01 (name) rfr_data (value) stuff%3dgood Nested Parameters (name) stuff (value) good (name) rft_dat (value) param1%3Done%26param2%3Dtwo Nested Parameters (name) param1 (value) one (name) param2 (value) two -----------------Using request.getParameter()
+
+The data stuff=good is also passed to the target inside the rfr_dat parameter. This demonstrates good practice by avoiding name conflicts.
+
+Example 3
+
+This link demonstrates that any top-level paramater will also be passed to the target, but it will not be wrapped in any OpenURL containers:
+
+http://dx.doi.org/openurl?url_ver=Z39.88-2003&rft_id=doi:10.5555/unique_doi_060103-01&rfr_data=stuff%3dgood&santa=claus
+
+In this case, the name-value pair santa=claus is appended to the link in a way that is not consistent with (but no explicitly prohibited by) the OpenURL specification. The target receives this data:
+
+(name) url_ver (value) Z39.88-2003(name) rft_id (value) doi:10.5555/unique_doi_060103-01 (name) rfr_data (value) stuff%3dgood Nested Parameters (name) stuff (value) good (name) santa (value) claus (name) rft_dat (value) param1%3Done%26param2%3Dtwo Nested Parameters (name) param1 (value) one (name) param2 (value) two -----------------Using request.getParameter()
+
+Example 4
+
+This link shows how the OpenURL based parameter passing handles potential conflicts in parameter names:
+
+http://dx.doi.org/openurl?url_ver=Z39.88-2003&rft_id=doi:10.5555/unique_doi_060103-01&param1=five
+
+In this case, the variable param1 is passed to the target twice:
+
+(name) url_ver (value) Z39.88-2003 (name) rft_id (value) doi:10.5555/unique_doi_060103-01 (name) five?url_ver (value) Z39.88-2003 (name) rft_id (value) doi:10.5555/unique_doi_060103-01 (name) param1 (value) five (name) rft_dat (value) param1%3Done%26param2%3Dtwo Nested Parameters (name) param1 (value) one (name) param2 (value) two -----------------Using request.getParameter()
+
+Here, the param1 nested inside rft_dat is known to be the one registered with the DOI's URL.
+
+If, on the other hand, you used the primitive urlappend function instead, as shown here:
+
+http://dx.doi.org/10.5555/unique_doi_060103-01?urlappend=%26param1=five
+
+the target wouldn't be able to tell which value of param1 came from the DOI or from the source link:
+
+(name) param1 (value) one (name) param2 (value) two (name) param1 (value) five -----------------Using request.getParameter()
+
+Powered by (C)ADRIAN.OROZCO.JIMENEZ.ACOSTA.GAMEZ(C)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+login | sign up
+
+
+    CrossRef Support 
+
+
+Home
+Announcements
+Help Documentation
+Submit a request
+Check your existing requests
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+CrossRef Support
+
+
+
+
+
+FundRef depositors: programs within CrossMark
+
+Patricia Feeney Jun 4 • Announcements 
+
+
+
+Our deposit schema allowed multiple FundRef programs (<fr:program>) within CrossMark deposits. This was an oversight, only one <fr:program> should be deposited.  The <fr:program> element can contain multiple groups of funder information within a "fundgroup" assertion as described in the FundRef documentation.
+
+Our deposit schema is being updated to enforce this.  If you have been depositing FundRef data with multiple programs, please redeposit as this affects how CrossMark displays your funding information.
+
+.
+
+
+
+reprocessing articles deposited May 29 - today
+
+Patricia Feeney Jun 1 • Announcements 
+
+
+
+We have identified an issue with post-deposit processing of journal articles and as a result will need to reprocess all deposits made from May 29 at 1:30 ET through today. No action is needed from depositors, you'll probably see two submission logs for items deposited during that period.  
+
+.
+
+
+
+CSV upload for CrossCheck as-crawled URLs
+
+Patricia Feeney Feb 5 • Announcements 
+
+
+
+As-crawled URLs for CrossCheck indexing can now be deposited with a CSV upload, details are here: http://help.crossref.org/as-crawled-csv-upload
+
+.
+
+
+
+Improvements to the getFunders API
+
+Patricia Feeney Jan 28 • Announcements 
+
+
+
+The matching for the getFunders API has been improved. The FundRef Registry is continuously updated with new funding organizations. The getFunders API returns Funder information deposited for a DOI, as well as any additional Funder information that may not have been established at the time of deposit. 
+
+
+For example, http://doi.crossref.org/getFunders?q=10.1109/JPHOT.2014.2331233 displays funder information in JSON format for DOI 10.1109/JPHOT.2014.2331233.
+
+
+The funder name ‘NSF’ has been deposited for this DOI. This funder name is too ambiguous to make a match, the getFunder API displays all available funders related to ‘NSF’.
+
+.
+
+
+
+Password updates for deposit accounts
+
+Patricia Feeney Jan 7 • Announcements 
+
+
+
+CrossRef strongly advises that all depositors move to HTTPS. Once HTTPS has been implemented by your organization, you should change passwords for any deposit accounts that have been used with the non-SSL interface.
+
+Please contact support@crossref.org to coordinate password changes.
+
+Note: We will continue to support a non SSL interface but we strongly encourage anyone making deposits or services requiring a deposit enabled login to switch to SSL. Query transactions can continue to use non SSL but be sure to use a separate account so that deposit capable credentials are not exposed to clear text transmissions.
+Useful topics include:
+Getting Started
+Using OpenURL
+CrossRef Schema
+Depositing DOIs
+How to Query
+
+
+ 
+
+
+
+ 
+
+    CrossRef Support 
+
+
+Home
+Forums
+Documentation
+Submit a request
+Check your existing requests
+
+
+
+
+
+ 
+
+
+   
+   
+   
+  
+   
+ Print  
+   
+  
+   
+ View  
+   
+ 
+   
+   
+   
+ 
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
+   
+   
+
+
+
+
+   
+   
+   
+
+
+
+
+
+
+
+
+Help Center
+
+
+Home
+
+
+
+About CrossRef DOIs
+
+
+What is a DOI
+
+
+
+Who uses CrossRef DOIs
+
+
+
+Examples of DOI use
+
+
+
+How do CrossRef DOIs work?
+
+
+
+
+Getting Started
+
+
+
+Depositing DOIs and metadata
+
+
+
+Queries & retrieving metadata
+
+
+
+Maintaining & working with DOIs
+
+
+
+User Interfaces
+
+
+
+Machine Interfaces / APIs
+
+
+
+Advanced topics
+
+
+
+CrossRef Services
+
+
+
+CrossRef Schema
+
+
+
+Guidelines, Policies, and FAQs
+
+
+
+
+
+
+
+
+Table of Contents
+Index
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Welcome to CrossRef Help
+
+ 
+
+
+Browse the table of contents to the left for an overview of CrossRef functions, or search our help documentation using the box above.
+
+
+
+
+Popular Help & FAQs
+
+
+
+New Topics
+◾Notification Callback service
+◾funding and license CSV upload
+◾Depositing non-CrossRef DOIs
+◾JATS abstracts
+
+Getting Started
+◾How CrossRef works
+◾How depositing works
+◾How querying works
+◾Publishers
+◾Libraries
+ 
+Popular Topics
+◾OpenURL
+◾Using HTTPS to POST
+◾Using HTTPS to Query
+◾Transferring DOI ownership
+◾DOI display guidelines
+
+Non-help links
+◾CrossRef website
+◾CrossRef Labs
+ 
+
+For Estimating Grid Properties Of A Power Grid (Siemens ...☑
+
+The Patent Description & Claims data below is from USPTO Patent Application 20150025860, Method and device for estimating grid properties of a power grid.
+
+
+freshpatents.com/-dt20150122ptan20150025860.php
+
+
+
+Phase-locked-loop With Quadrature Tracking Filter For ...☑
+
+Methods and systems for synchronizing an electric grid having unbalanced voltages are provided. A voltage vector may be filtered in a quadrature tracking filter (QTF ...
+
+
+freshpatents.com/Phase-locked-loop-with-quadrature-trackin...
+
+
+
+Home Page - Magnetek☑
+
+Welcome to Magnetek. ... Patents; Site Map; Industries Served. Material Handling; Elevator; Mining; Mobile Hydraulic; Marine Terminal; Heavy Moveable Structures ...
+
+
+magnetek.com
+
+
+
+High-efficiency Electric Generator Patent Application 60-528616☑
+
+Dynamotor Electric Generator 11/009798 Electric Generator Patent ... CROSS REFERENCE TO ... the electricity to a local power grid for ...
+
+
+thelivingmoon.com/41pegasus/33roberts_files/Dynamoto_Electr...
+
+
+
+Siemens USA☑
+
+Smart Grid Solutions; Drive Technology; Energy; Financial Services; ... Siemens will supply and service power generation technology for the CPV Valley Energy Center, ...
+
+
+usa.siemens.com/answers/en/?stc=usccc020189
+
+
+
+All Cross Reference Guides☑
+
+Cross Reference Guide is a search engine for electronic parts x-ref. It's the biggest database of the ... Catalog cross-refer by electronic components manufacturers.
+
+
+allxref.com
+
+
+
+US 08811806 B2 - Patent Details - Power Supply Arrangement ...☑
+
+Cross-Reference to Related Applications. ... where power is taken from an existing three-phase power grid. ... Patent details; Publication:
+
+
+patentorg.com/power-supply-arrangement-for-direct-detai...
+
+
+
+Online Catalog/Cross Reference - U.S. MOTORS☑
+
+Home / Online Catalog/Cross Reference Additional Resources ... Nidec Motor Corporation trademarks followed by the ® symbol are registered with the U.S. Patent and ...
+
+
+usmotors.com/Online-Catalog.aspx
+
+
+
+List of new Electric Grid patents & technologies☑
+
+Electric Grid - full listing of recent patents, inventions and new technologies and a free subscription to track new patents related to Electric Grid
+
+
+tgs.freshpatents.com/Electric-Grid-bx1.php
+
+
+
+Reference- MPEP 601 - United States Patent and Trademark Office☑
+
+... Reference to a "Sequence Listing," a table, ... The Office of Patent Application Processing ... 601.02 Power of Attorney ...
+
+
+uspto.gov/web/offices/pac/mpep/s601.html
+
+
+
+PDF Molex MX10 Catalog☑
+
+Crimp Tooling Cross Reference ... Milli-Grid 2.0 62100-2000 MODULE 63600-0478 HANDLE 11-31-3337 ... Electric Press—15 Ton Contact Molex
+
+
+molex.com/catalog/web_catalog/pdfs/U.pdf
+
+
+
+Hubbell Power Systems - Products for Electric Utilities ...☑
+
+Personal Protective Ground Grid; Grounding Sets; ... Cross Reference; eCatalog; myHubbell; Web Tools; Mobile Apps; Print Catalogs; Request Literature; Contact Us ...
+
+
+hubbellpowersystems.com
+
+
+
+Cross Reference: /texmaker/3.3.4/dictionaries/en_US.dic/☑
+
+Cross Reference: en ... Crockett 2299Croesus 2300Cromwell/M 2301Cromwellian 2302Cronin/M 2303Cronkite/M 2304Cronus/M 2305Crookes 2306Crosby 2307Cross 2308 Crow/SM ...
+
+
+code.metager.de/source/xref/texmaker/3.3.4/dictionaries/e...
+
+
+
+LED lamp with half wave dimming Patent (Patent # 9,066,403 ...☑
+
+Latest General Electric Patents: ... such as the 110 volt 60 Hertz grid power available in North America. ... With reference to FIG. 2, ...
+
+
+patents.justia.com/patent/9066403
+
+
+
+Patent EP1415379A1 - Coordinating renewable power production ...☑
+
+As viewed from the power grid and its stakeholders' perspective, enhanced renewable facilities are more stiff than conventional renewable facilities, ...
+
+
+encrypted.google.com/patents/EP1415379A1?cl=en
+
+
+
+Patent US20080172346 - Methods, systems and agreements for ...☑
+
+... (CPE) by a consumer for power generation at a consumer premises, the renewable energy CPE adapted to deliver power onto a power grid. ... Advanced Patent Search.
+
+
+encrypted.google.com/patents/US20080172346
+
+
+
+Variable speed wind turbine having an exciter machine and a ...☑
+
+Home / Patents / Patent Number 07425771 ... CROSS-REFERENCE TO RELATED ... an intermediate static converter not connected to the grid, power control and pitch ...
+
+
+strutpatent.com/patent/07425771/variable-speed-wind-turbi...
+
+
+
+Parts Cross Reference and Obsolete Products Search | Analog ...☑
+
+This cross-reference search will assist you in finding Analog Devices products that are ... low power in-amps with an excellent common-mode rejection ratio ...
+
+
+analog.com/cpsearch/CrossReferenceSearch.aspx
+
+
+
+Electric toaster with infrared detector cross reference to ...☑
+
+At Patents you can conduct ... Electric toaster with infrared detector cross reference to ... in which the same reference numerals were used to designate ...
+
+
+patents.com/us-6049070.html
+
+
+
+Patent application title: DISTRIBUTED SOLAR POWER PLANT AND A ...☑
+
+Patent application title: DISTRIBUTED SOLAR POWER PLANT AND A METHOD OF ITS CONNECTION TO THE EXISTING POWER GRID Inventors: Michael Cyrus (Castle Rock, CO, US ...
+
+
+faqs.org/patents/app/20130342021
+
+
+
+Smart Grid Homepage☑
+
+Welcome. Welcome to the Smart Grid website at the National Institute of Standards and Technology (NIST). Whether you are a consumer, engineer, or policymaker, this ...
+
+
+nist.gov/smartgrid/
+
+
+
+Data Sheet Library - Anderson Power Products☑
+
+Family Cross Reference (168KB) PD35 Data Sheet (220KB) ... MARC Connector Data Sheet (214KB) Saf-D-Grid® Connector: ... SPEC Pak® Mid Power Data Sheet
+
+
+andersonpower.com/literature/datasheets.html
+
+
+
+Patent application title: Distributed Solar Power Plant And A ...☑
+
+Patent application title: Distributed Solar Power Plant And A Method Of Its Connection To The Existing Power Grid Inventors: Sergey Frolov (New Providence, NJ, US) ...
+
+
+faqs.org/patents/app/20120133207
+
+
+
+PDF Flip Chip Ball Grid Array Package Reference Guide (Rev. A)☑
+
+Flip Chip Ball Grid Array Package Reference Guide ... Typical Flip Chip BGA Package (Cross ... SPRU811 Flip Chip Ball Grid Array Package 13 3.1.5 Electrical Modeling ...
+
+
+ti.com/lit/ug/spru811a/spru811a.pdf
+
+
+
+Arlington | Manufacturer Cross-Reference☑
+
+Manufacturer Cross-Reference; ... Patents and Standards. ... Arlington produces high quality electrical and communications products and fittings that are sure to meet ...
+
+
+aifittings.com/reference/cross-reference
+
+
+
+Mcmillan Electric Motors Mexico Cross Reference : Mashed Themes☑
+
+File: Mcmillan Electric Motors Mexico Cross Reference.PDF Download >>> Mcmillan_Electric_Motors_Mexico_Cross_Reference.PDF Last update: April 22th, 2014
+
+
+mashedthemes.zendesk.com/entries/49376659-Mcmillan-Electric-Motors...
+
+
+
+Heat responsive power interrupting device cross-reference to ...☑
+
+At Patents you can conduct a Patent Search, File a Patent Application, ... Heat responsive power interrupting device cross-reference to related applications
+
+
+patents.com/us-5930097.html
+
+
+
+Nonprovisional (Utility) Patent Application Filing Guide | USPTO☑
+
+A Guide to Filing a Utility Patent Application January 2014 Introduction. ... Patent Term Extension; Power of Attorney and Assignment; Revised Amendment Practice 37 CFR;
+
+
+uspto.gov/patents-getting-started/patent-basics/typ...
+
+
+
+Cross Reference Search - - Schneider Electric USA☑
+
+... Networks and Secure Power. Back. Data Center, ... Smart Grid. Network Management Software; PLC, ... Product Cross Reference.
+
+
+schneider-electric.us/en/support/resources-and-tools/product-cr...
+
+
+
+PartsCrossReference.com. Cross reference data for industrial ...☑
+
+PartsCrossReference.com. Bearing cross reference interchange data for industrial, agricultural, automotive part numbers. ibi seal filter alternative.
+
+
+partscrossreference.com
+
+
+
+
+
+
+Patent US2716146 - Battery grid - Google Patents☑
+
+...Patent BATTERY GRID Robert M. Raney, Euclid, Ohio, assignor to The Electric Storage Battery are generally diamondshaped in cross-section, and are symmetrical about the center plane of the grid. References Cited in the file of this patent UNITED STATES PATENTS 1,566,280 Lormor Dec.
+
+
+encrypted.google.com/patents/US2716146
+
+
+
+Patent US4777370 - Electron gun operating by secondary emission...☑
+
+Patent Citations (4), Non-Patent Citations (4), Referenced by (5), Classifications (13), Legal Events (4). External Links: USPTO, USPTO Assignment of the overall cross sectional surface of said second plate, such that said conducting grid creates a focalization electric field for focusing said ions on said...
+
+
+google.kz/patents/US4777370
+
+
+
+...Product For Tracking Information In An Electric Grid - Patent...☑
+
+signal of an electric grid is a cross-coupled phase-lock loop filter. (CCPLL) that includes the use of a phase-lock-loop (PLL) apparatus having. References Cited [Referenced By] U.S. Patent Documents. 6757350 June 2004 Chesavage.
+
+
+docstoc.com/docs/57210361/Apparatus,-Method-And-Compu...
+
+
+
+Find filter by cross reference☑
+
+New filters. Find filter by cross reference. Find a filter > by cross references.
+
+
+hifi-filter.com/en/catalog/recherche-equivalence.html
+
+
+
+Filtrec S.p.A. Cross reference☑
+
+Attention When crossing from a non-original equipment filter number, please check original number to verify Cross Reference. We cannot be responsible from misapplications. If your search has no success, please fill the request form and send us.
+
+
+filtrec.it/en/cross-reference.asp
+
+
+
+eCatalog - Cross Reference Search☑
+
+Cross Reference Search. Search for products by competitive cross-reference or Donaldson item number. When searching for competitive item numbers Do Not use special characters (i.e. dashes, periods, commas, or slashes).
+
+
+dynamic.donaldson.com/WebStore/search/cross_reference.html
+
+
+
+WABCO: Product catalog, cross reference☑
+
+WABCO: Product Catalog: Cross Reference. Please enter a reference number and click Start to display the product number. Search Company.
+
+
+inform.wabco-auto.com/intl/en/informcr.php
+
+
+
+Power flow management in an electric power grid - Hydro-quebec☑
+
+Cross-reference to related applications. The present application is a continuation-in-part of U.S. patent application Ser. No. 09/453,400 filed Dec. Background of the invention. Power flow in an electric power transmission grid is difficult to manage. Power is transmitted over...
+
+
+freepatentsonline.com/6486569.html
+
+
+
+Patent US8202653 - Electrode with reduced resistance grid and hybrid...☑
+
+Patents. An electrode includes a current collector comprising a grid, said grid comprising a plurality of planar No. 5,264,306 and U.S. Design Pat. Des. 332,082 are incorporated herein by reference in their entireties. 5B is a cross sectional view of the grid plate of FIG. 5A along an A-A axis.
+
+
+google.com.co/patents/US8202653
+
+
+
+Патент US1493386 - Electric grid - Google Патенты☑
+
+United states 1,493,386 patent office. Anson s. rice, of new york, n. y., assignor to duparquet huot & mo'neuse 00. Havingthus described the invention, what I claim is: r. 1. An electric grid comprising a frame having cross bars secured thereto, said cross bars having...
+
+
+google.com.tr/patents/US1493386
+
+
+
+Патент US3161799 - Frame grid - Google Патенты☑
+
+In one form of frame grid construction the frame cross supports are formed integrally with the side members. References Cited in the file of this patent UNITED STATES PATENTS 1,444,438 White Feb. Western Electric Co. Electrode and its construction. US1570265 *.
+
+
+google.ru/patents/US3161799
+
+
+
+DOUBLY-CONTROLLED ASYNCHRONOUS GENERATOR - Patent...☑
+
+Cross-reference to related applications. [0006]However, the doubly-fed asynchronous generator system described in the '187 patent has some disadvantages, resulting from the direct connection of the generator's stator to the three-phase electric power distribution grid.
+
+
+faqs.org/patents/app/20110018270
+
+
+
+MANN-FILTER Online Catalogue Europe - Cross References☑
+
+Vehicles. MANN-FILTER. Cross reference. Dimensions.
+
+
+catalog.mann-filter.com/EU/eng/oenumbers
+
+
+
+Product Cross Reference - Schneider Electric United States☑
+
+Schneider Electric TV. Partners.
+
+
+schneider-electric.us/sites/us/en/support/product-support-resou...
+
+
+
+Untitled Page | Cross Reference☑
+
+Cross Reference. Manufacturer/Brand Name If you don't know the Number to Cross, Please Select Manufacurer/Brand and click on the Search Button to view a complete listing of Manufacturer stock numbers.
+
+
+centuryelectricmotor.com/AOSECatalog/CrossReference/CrossReference...
+
+
+
+The domain www.areva-td.com is registered by NetNames☑
+
+Alstom Grid.
+
+
+areva-td.com
+
+
+
+Cross Reference - Electronic Circuits, TV Schematics, Audio☑
+
+Cross reference. Search (manufacturer PN): BC547. Cross Reference CI STK Cross Reference CI TDA Cross Reference CI Sharp Cross Reference Hitachi Audio IC Cross Reference and Circuit Applications SMD Cross Reference and Equivalent.
+
+
+english.electronica-pt.com/components-cross-reference
+
+
+
+Patent US3920887 - Heating element assembly - Google Patents☑
+
+The capping members are secured to the cross-members by means of a ridge and [56] References Clted bent-over tabs to rigidly secure the bushings between 1 307 98 i J PATENTS 338/290 UX the cross member and the capping member. Electric grid.
+
+
+google.com.et/patents/US3920887
+
+
+
+Filter Cross Reference Results - Toolbox | Donaldson Australia☑
+
+cross reference search. Search and cross reference our database of over 400,000 part numbers. Get detailed part information, bulletin pdfs and much more from the results.
+
+
+donaldsontoolbox.com.au/search/
+
+
+
+Parker UCC cross reference | The Hydraulic Warehouse Australia☑
+
+Parker UCC cross reference. Send An Enquiry Where to Buy. Other Products. Stauff Cross Reference. Filler Breathers - Push on Type. THW.
+
+
+thehydraulicwarehouse.com.au/hydraulic-products/parker-ucc-cross-refer...
+
+
+
+MAHLE Industry | Cross Reference List☑
+
+Premium partner. Cross Reference List. VW released parts list. Test bench in accordance with VDI/DIN Directive 3926.
+
+
+mahle-industry.com/en/service/filtration/cross_reference_list/
+
+
+
+Class 977 Nanotechnology Cross-Reference Art Collection☑
+
+PATENTS. Patent Classification. Class 977 Nanotechnology Cross-Reference Art Collection. assist in the further development of an expanded, more comprehensive, nanotechnology cross-reference art collection classification schedule.
+
+
+uspto.gov/patents/resources/classification/class_97...
+
+
+
+Patent US974329 - Electric heating device. - Google Patente☑
+
+My invention relates to electric heating apparatus,,and it has special reference to suchdevices as 2 is a detail view, partially in cross-section, of an electric heating device constructed in accordance with my invention. Patented Novgl. 1910. -zigzag grid and are held in position by clamping rods 4 and 5
+
+
+google.co.th/patents/US974329
+
+
+
+...noise signal generation and injection on to the electric power grid☑
+
+This patent is incorporated by reference herein. The real-time cross-correlation calculation technique can be used between selected locations throughout the electric grid to calculate multiple simultaneous impulse response data sets and therefore provide an overall dynamic real-time image of...
+
+
+all-patents.com/us-patent/8412475
+
+
+
+Linux identifier search - Linux Cross Reference - Free Electrons☑
+
+Linux Cross-Reference (LXR) service by Free Electrons. The easiest way to study Linux kernel sources. Available for all recent releases.
+
+
+lxr.free-electrons.com/ident
+
+
+
+Standards, Patents, and the National Smart Grid☑
+
+2012] STANDARDS, PATENTS, & SMART GRID 647 consumer. For example, electricity meters in many 648 PACE LAW REVIEW [Vol. 32:3 Figure 2 Smart Grid Conceptual Reference Diagrama1 -§ ... .- o efficiency of the electric grid. (2) Dynamic optimization of grid operations and resources, with full See, e.g., Carl Shapiro, Navigating the Patent Thicket: Cross-Licenses, Patent Pools and Standard...
+
+
+digitalcommons.wcl.american.edu/cgi/viewcontent.cgi?article=1182&context=...
+
+
+
+Word Tips - Cross-references - Troubleshooting☑
+
+Cross-references - Troubleshooting. You may sometimes experience that one or more cross-reference fields in a document do not show the correct content. You may experience cross-reference fields that are not updated even if you changed the referenced item, e.g. a heading.
+
+
+thedoctools.com/?show=wt_cross-reference_trouble
+
+
+
+...noise signal generation and injection on to the electric power grid...☑
+
+No. 3,718,813, entitled â€œTechnique for Correlation Method of Determining System Impulse Response.â€ This patent is incorporated by reference herein. The real-time cross-correlation calculation technique can be used between selected locations throughout the electric grid to calculate...
+
+
+freepatent.ru/patents-us/8412475
+
+
+
+Wikipedia☑
+
+A free encyclopedia built collaboratively using wiki software. (Creative Commons Attribution-ShareAlike License).
+
+
+en.wikipedia.org
+
+
+
+Bible Cross References Visualization☑
+
+About. This grid is arranged by book, showing cross-reference sources on the y-axis and targets on the x-axis. Within each square, the first verse in the book or section is at the top, and the last verse is at the bottom.
+
+
+openbible.info/labs/cross-references/visualization
+
+
+
+Schneider Electric Buildings Selection Tools☑
+
+You are here: Tools Home > Cross Reference Tool.
+
+
+tools.buildings.schneider-electric.com/CrossReference/
+
+
+
+electric motor cross reference | Forum☑
+
+Gents, Can any one tell me if there is a web site where I can cross reference an older electric motor part number... or where I can actually purchase an older electric motor (P/N: 5KCP39FG R251S) Thank You, Mark.
+
+
+diychatroom.com/f18/electric-motor-cross-reference-46729/
+
+
+
+Alstom Grid to RMS relay cross reference with links...☑
+
+Alstom Grid to RMS relay cross reference with links to documentation. The chart below was taken from the product notice that was sent to customers.
+
+
+schneider-electric.com.tr/support/index?page=content&country=TR&lan...
+
+
+
+Patent Searching☑
+
+Search patents on the Internet. Providing direct links to patent searching engines on the Internet and indicating their coverage and scope. WIPO Patentscope - Simple Search WIPO Patentscope - Advanced Search WIPO Patentscope - Structured Search WIPO Patentscope - Cross Lingual Search...
+
+
+irossco.com/patentsearching.htm
+
+
+
+Origins of cross reference grid & picture grid puzzles.☑
+
+Grids using cross reference to deduce the contents also have a long history: Trevor Truran's "Whittleword" from Games & Puzzles Magazine Issue 73 Summer 1979 is one such. However the Griddler type of puzzle is new in the way that the...
+
+
+puzzlemuseum.com/griddler/gridhist.htm
+
+
+
+AAF International - Clean Air Products, Air Filters, Dust Collectors, Air...☑
+
+AAF Cross Reference. Pleated Panel Filters. Activator™ Series. Tri-Dek. Maxi-Grid™. Bio-Pure. Series ST55 Series 225T Series 325T Series 425T.
+
+
+aafintl.com/aaf cross reference.aspx
+
+
+
+PDF Smart grid patents and standards☑
+
+be applied by SDOs in the Smart Grid initiative when patents are essential to best practices. 491 2010/0114387 Management of a Bulk Electric Power Market Aggregation of Distributed Energy Resources Detection of Islanding in Power Grids Electric power grid control using a market-based...
+
+
+alston.com/Files/Publication/a09410c0-ac1e-4397-b698...
+
+
+
+Cross Reference☑
+
+Case Studies. Contractor Connection. Cross Reference. Valves, Controls & System Protectors Cross Reference. White-Rodgers Model Number Search Cross Reference. Distributor Locator. eBooks.
+
+
+emersonclimate.com/en-US/resources/cross_reference
+
+
+
+Cookies not enabled | National Grid☑
+
+National Grid. Thanks for visiting National Grid, unfortunately we have detected that your browser may be blocking cookies that are required by our site to give you a great experience and allow you to sign into our site.
+
+
+nationalgridus.com
+
+
+
+...Announce "Declaration of Energy Independence" from Electric Grid...☑
+
+Competitor Cross Reference Search. The announcement will be made at 10:30 a.m. on Friday, July 2, as the company dedicates Bloom Energy fuel cell systems at the site, and lays out a framework to get entirely off the public electric grid.
+
+
+cypress.com/?rID=44289
+
+
+
+Cross-Reference for Electric Motors - WEG Easy - United States...☑
+
+Cross-Reference for Electric Motors. Energy Efficiency Legislations Worldwide. 2014 WEG Motor Catalog. 2013 USA Automation Catalog. Contact Us. Cross-Reference for Electric Motors.
+
+
+weg.net/us/WEG-easy/Cross-Reference-for-Electric-...
+
+
+
+Green Car Congress: AeroVironment Awarded Patent for Electric...☑
+
+For instance, utilities could employ PosiNET to capture and analyze energy usage data from EV battery packs that connect to the electric grid. Listed below are links to weblogs that reference AeroVironment Awarded Patent for Electric Vehicle Energy Data Management and Control...
+
+
+greencarcongress.com/2009/08/av-patent-20090810.html
+
+
+
+Marathon Electric Motors | Competitive Cross Reference☑
+
+The information in this cross reference is subject to change without notice at any time. Currently Cross Referenced Competitors are Baldor, USEM, Reliance, General Electric, and AO Smith.
+
+
+marathonelectric.com/motors/xreflookup.jsp
+
+
+
+Smart Grid Patents » Green Patent Blog☑
+
+Posted in Green Patents, IP Litigation, LED Patents, Smart Grid Patents, Wind Patents. The study uses 2008 as a reference year, and defines its Potential Licensees and Potential Acquisitions Targets relative to that year.
+
+
+greenpatentblog.com/category/smart-grid-patents/
+
+
+
+Cummins Filtration - Catalog - Catalog Map☑
+
+Cross Reference. Catalog Supplements. Cross Reference. Fleet Manager.
+
+
+catalog.cumminsfiltration.com
+
+
+
+CSS reference - CSS | MDN | Mozilla Developer Network☑
+
+This CSS Reference lists all standard CSS properties, pseudo-classes and pseudo-elements, @-rules, units, and selectors in alphabetic order. grid-auto-columns.
+
+
+developer.mozilla.org/en-US/docs/Web/CSS/Reference
+
+
+
+html - Cross-reference (named anchor) in markdown - Stack Overflow☑
+
+Take me to [pookie](#pookie). Should be the correct markdown syntax to jump to the anchor point named pookie. To insert an anchor point of that name use HTML: <a name="pookie"> </a>. [Update: use name= instead of id=. See Note below.].
+
+
+stackoverflow.com/questions/5319754/cross-reference-named-a...
+
+
+
+Patent US3033100 - Expansible broiling rack - Google Patents☑
+
+Gen Electric. Grid 1 includes a Wire frame 3 which is rectangular in form and a plurality of spaced parallel wires 4 welded or otherwise secured to frame 3. Similarly, grid 2 comprises a rectangular wire 4 References Cited in the file of this patent UNITED STATES PATENTS 547,593 Wagoner Oct.
+
+
+google.com.tj/patents/US3033100
+
+
+
+Competitor Cross-Reference | Appleton | O-Z Gedney | SolaHD☑
+
+This cross reference is intended to be used as a tool to determine an equivalent Appleton Group catalog number, given another manufacturer's catalog number. Catalog numbers of other manufacturers are shown for products that appear to be equivalent in their functional use...
+
+
+emersonindustrial.com/en-US/egselectricalgroup/aboutus/crossref...
+
+
+
+WebReview.com: Style Sheet Reference Guide Master Grid☑
+
+Cross browser CSS list(*).
+
+
+webtechniques.com/style/css1/charts/mastergrid.shtml
+
+
+
+universal electric motors cross reference - free pdf ebook downloads☑
+
+cross reference 2009q reference standard Stearns AC Solenoid Actuated Brakes toDings Company Dynamics Group brakes. Burner Motor Cross Reference Guide Rental Mart USA FLANGE Emerson Electric General Electric Marathon Electric S55GYSJP-5866(2456U) 5KH39BN5010JY...
+
+
+greenbookee.com/universal-electric-motors-cross-reference/
+
+
+
+UK Grid Reference Finder☑
+
+Find an OS Grid Reference for Any Location in the UK : Just Right-Click on the Map ! Press 'Stop Drawing' or press Esc to complete line. Click on the colour patch to change the line colour or the close cross to delete a line.
+
+
+gridreferencefinder.com
+
+
+
+deviantart.com/journal/update☑
+
+Transmission Grid Security: A PSA Approach (Power Systems) read.
+
+
+deviantart.com/journal/update/
+
+
+
+MSN.com☑
+
+MSN has a donate to the Red Cross page.
+
+
+msn.com
+
+
+
+Войти | LinkedIn☑
+
+Director - Sustainability 2012 @ GRID Consortium.
+
+
+linkedin.com/grp/
+
+
+
+Welcome to Forbes☑
+
+announced and completed grid-tied storage.
+
+
+forbes.com/fdc/welcome_mjx.shtml
+
+
+
+Business Wire☑
+
+SAS First to Automate Enterprise Grid Computing Capabilities ... - Business W...
+
+
+businesswire.com/portal/site/google/index.jsp?ndmViewId=ne...
+
+
+
+Bloomberg.com: Asia☑
+
+Bloomberg - Kodak Sues Matsushita Over Digital Camera Patents.
+
+
+bloomberg.com/apps/news?pid=20601080&refer=asia
+
+
+
+Merriam-Webster OnLine☑
+
+Free searchable dictionary and thesaurus, word games, a word of the day, and many other English language and vocabulary reference tools and resources.
+
+
+merriam-webster.com
+
+
+
+Yahoo Finance☑
+
+data grid stock market formula spreadsheet live data dde.
+
+
+finance.yahoo.com
+
+
+
+ACDelco Parts | Competitive Cross Reference☑
+
+» Competitive Cross Reference. Enter a given manufacturer's part number to get the correspondng ACDelco part number.
+
+
+parts-catalog.acdelco.com/catalog/interchange.php
+
+
+
+Standards, Patents, and the National Smart Grid☑
+
+efficiency of the electric grid. (2) Dynamic optimization of grid operations and resources, with full See, e.g., Carl Shapiro, Navigating the Patent Thicket: Cross-Licenses policies and procedures that have been developed independently and, for the most part, without reference to the Smart Grid.
+
+
+digitalcommons.pace.edu/cgi/viewcontent.cgi?article=1812&context=plr
+
+
+
+Talking Boards Patents and Trademarks☑
+
+You may search in a variety of ways and you can cross-reference until you're cross-eyed. The site only carries patents back as far as the 1870's, but who's complaining? If we hadn't done some digging we would have missed them altogether. Expect to see some really weird stuff: electric planchettes, sound...
+
+
+museumoftalkingboards.com/patent.html
+
+
+
+GameGuru Mania☑
+
+Defense Grid: The Awakening Demo.
+
+
+ggmania.com
+
+
+
+Electric Motor Cross-reference | Products & Suppliers on GlobalSpec☑
+
+Find Electric Motor Cross-reference related suppliers, manufacturers, products and specifications on GlobalSpec - a trusted source of Electric Motor Cross-reference information.
+
+
+globalspec.com/Industrial-Directory/electric_motor_cross...
+
+
+
+M44-Series Truck Parts Cross-Reference » Mark's Tech Journal☑
+
+4 Responses to "M44-Series Truck Parts Cross-Reference". john salley says There is a bleed valve on top of the filter body, and you should be able to bleed them by turning on the master power switch on the dashboard (which will turn on the electric in-tank pump) and opening the bleed valve until no more...
+
+
+nf6x.net/1999/12/m44-series-truck-parts-cross-refe...
+
+
+
+Reference☑
+
+Reference. WIPO is the world's most comprehensive source of data on the intellectual property (IP) system, as well as of empirical studies, reports and Infographics - International patent, trademark and design filings under the PCT, Madrid and Hague systems (2014). IP and technology databases.
+
+
+wipo.int/reference/en
+
+
+
+AMSOIL Master Filter Cross Reference Guide☑
+
+This cross reference guide will return the corresponding AMSOIL filter(s) for any manufacturer filter number. Note: When crossing from a non-original equipment filter number, please check applications to verify Cross Reference.
+
+
+amsoil.com/AmsoilLookups/MasterFilterCrossRef.aspx
+
+
+
+"Facebook" - a social networking service☑
+
+Allows users to find and communicate with friends, classmates and colleagues, share thoughts, photos and videos, and join various groups.
+
+
+facebook.com
+
+
+
+the Cross-referenced Patent cooperation treaty welcomes you to...☑
+
+the Cross-referenced Patent cooperation treaty welcomes you to... • Learn about the Cross-Referenced PCT, compiled by Dr. Cees Mulder • Download a sample of the book • Put yourself on the mailinglist • Order the book or • Just nose around a bit...
+
+
+helze.com
+
+
+
+Power Drive Services - Electric Motor Specialists - Inverter Cross...☑
+
+-electric motor control specialists-. Unit 1 Victoria Street Ind. Est. | Inverter Cross-Reference Information. Home. Grid-tied PV systems. Motors. single & three phase.
+
+
+inverter.co.uk/inverters/cross-reference.htm
+
+
+
+reference grid | Словари и энциклопедии на Академике☑
+
+Grid reference — A typical map displaying grid reference Grid references define locations on maps 2. Elect. a. a metallic framework employed in a storage cell or battery for conducting the electric grid — [ grıd ] noun count ** 1. ) a pattern of straight lines that cross each other to form squares...
+
+
+robotics_en_ru.academic.ru/10660/reference_grid
+
+
+
+[HOPE X] Schedule | [HOPE X] Talks Grid☑
+
+Cultures of Open Source: A Cross-Cultural Analysis. Hacking the Patent System: The Vulnerabilities That Allow for Bad Patents and How to Stop Them. Electric Waste Orchestra: Learning and Teaching Music, Electronics, Programming, and Repurposing.
+
+
+hope.net/grid.html
+
+
+
+Schneider Electric☑
+
+ProWORX Nxt Cross-reference Data.
+
+
+modicon.com
+
+
+
+PDF Itl bulletin for october 2010☑
+
+Cyber security strategies for the smart grid: protecting the advanced digital infrastructure for electric power. The appendices to Volume 1 provide a detailed chart with cross-references for Smart Grid cyber security requirements to the security controls included in...
+
+
+csrc.nist.gov/publications/nistbul/october2010-bulletin...
+
+
+
+Actel IC Package Cross References☑
+
+User Manuals. Patents. Cross References. Press Releases. Fine Pitch Plastic Ball Grid Array.
+
+
+ironwoodelectronics.com/cross_references/Actel_Cross_Reference.cfm
+
+
+
+Extensive Motor Cross Reference Database | SRVC Electric Motors☑
+
+SRVC Electric Motors offers one the internets largest Electric Motor Cross reference database! Cross references available for 1,000's of motors from manufacturers such as THE FOLLOWING
+
+
+srvcelectricmotors.com/extensive-motor-cross-reference-database/
+
+
+
+pezadeal.com☑
+
+Peza Deal Best Shopping Online Shop Saucony 'grid 9000′ Sneaker (men)...
+
+
+pezadeal.com
+
+
+
+
+
+
+Hubbell Power Systems - Products for Electric Utilities...☑
+
+PCORE Electric. 15kV-69kV PRC® Bushings (Paper-Resin-Capacitor). Bracket, Ridge Iron. Fuse Link Storage Can. Gains, Crossarm Grid. Ground Set Configurator. myHeliCAP Customer Portal. PCORE Bushing Cross Reference.
+
+
+hubbellpowersystems.com/insulators/
+
+
+
+Xantrex Technology, Inc.☑
+
+A power supply manufacturer. Employ zero voltage crossing, or soft switching technology that dramatically improves efficiency and virtually eliminates switching transients in DC power supplies.
+
+
+xantrex.com
+
+
+
+bestlateststyle.com☑
+
+D. cross reference by part number manfacturer index.
+
+
+bestlateststyle.com
+
+
+
+metalmust.com☑
+
+Safavieh Grid Non Slip Rug Pad 9 X 12.
+
+
+metalmust.com
+
+
+
+LaTeX/Labels and Cross-referencing - Wikibooks, open books...☑
+
+In LaTeX you can easily reference almost anything that is numbered (sections, figures, formulas), and LaTeX will take care of numbering, updating it whenever necessary. The commands to be used do not depend on what you are referencing...
+
+
+en.wikibooks.org/wiki/LaTeX/Labels_and_Cross-referencing
+
+
+
+"Bing" - a global search engine☑
+
+Provides an international and local search of web pages, images and videos, and allows users to keep track of celebrities with the help of the xRank service.
+
+
+bing.com
+
+
+
+YouTube☑
+
+How's it different from Patent?
+
+
+youtube.com/watch?v=DiH4ue-gmvA
+
+
+
+Software error☑
+
+safety inspection and grid au.
+
+
+vegeta.jp/cgi-bin/recipe/noahbbs.cgi
+
+
+
+AndroidGuys☑
+
+AndroidGuys » AndroidGuys | Samsung and Cisco sign cross-licencse patent...
+
+
+androidguys.com
+
+
+
+National Geodetic Survey☑
+
+Provides information and products related to the definition and management of the National Spatial Reference System (NSRS) - the framework for latitude, longitude, height, scale, gravity, orientation and shoreline throughout the United States.
+
+
+ngs.noaa.gov
+
+
+
+Electric power transmission - iSnare Free Encyclopedia☑
+
+Highest towers: Yangtze River Crossing (China) (height: 345 m or 1,132 ft). References. Notes. ^ "A Primer on Electric Utilities, Deregulation, and Restructuring of U.S. Electricity Markets" (pdf). Westinghouse Electric Corporation, "Electric power transmission patents; Tesla polyphase system".
+
+
+isnare.com/encyclopedia/Electric_power_transmission
+
+
+
+Performance Filtration Cross Reference List☑
+
+The industry's leading cross-reference database. Shopping for air compressor parts, made easy! Call us today 800-866-2959. General Electric. Guardian Laboratories.
+
+
+pfifilter.com/crossreferences.php
+
+
+
+Best Buy☑
+
+electric stove.
+
+
+bestbuy.com
+
+
+
+Power flow management in an electric power grid - Patent # 6486569...☑
+
+Foreign Patent Documents: 2324417. Other References: Abstract Power flow in an electric power transmission grid is difficult to manage. One can see the terminals 18 of the switching device, as well as the crossing insulators.
+
+
+patentgenius.com/patent/6486569.html
+
+
+
+kinderstart.com/frame_for_links.php☑
+
+Grid Club.
+
+
+kinderstart.com/frame_for_links.php
+
+
+
+FIND on Barnes & Noble. Free 3-Day shipping on $25 orders!☑
+
+NOOK Book $34.99. Hope to Die (Alex Cross Series... James Patterson. Paperback $11.62. Page 1 of 749004. Next. View as: Grid List. Related categories.
+
+
+barnesandnoble.com/s/
+
+
+
+FT - Financial Times☑
+
+FT, Reuters, FOSS Patents, BI.
+
+
+ft.com
+
+
+
+PDF SEALANT Cross Reference☑
+
+SEALANT Cross Reference PRC/DeSoto MIL-S-38249 TYI / AMS3374 TY 4 MIL-S-38228 TYII / DMS1819 MIL-S-7502 obsolete Replaced by sealant Fuel tank sealing topcoat Buna-N type For electric connections and systems Windshield sealant Replaced by CS3330 A&B below Access door sealant.
+
+
+bac-online.com/customer/buaico/pdf/SEALANT_CROSS.pdf
+
+
+
+Amazon.com☑
+
+Amazon.com: Power Hoists: Electric Hoists, Air Hoists.
+
+
+amazon.com
+
+
+
+iPhone☑
+
+Gratis Lagu Electric Wire Hustle - Experience.mp3.
+
+
+down3.ucweb.com/ucbrowser/en/index.php
+
+
+
+International Rectifier - Cross Reference - Design With the Best☑
+
+48V. Hybrid and Electric Vehicles. Lighting. IR's cross reference search easily identifies IR devices to replace many competitor parts. Results are identified as direct crosses, upgrades offering improved performance or possible crosses.
+
+
+irf.com/cross-reference
+
+
+
+Falcon Electric | ProcureInc.com☑
+
+Falcon introduced a patented, transformerless on-line UPS technology to the USA market. Cross reference military-grade Falcon Electric products by SMD or MIL-M-38510 part number or specification.
+
+
+procureinc.com/manufacturer/Falcon_Electric/
+
+
+
+Electronic Arts☑
+
+Electric Arts.
+
+
+ea.com
+
+
+
+Twitpic - Share photos and videos on Twitter☑
+
+A Commented Study Bible With Cross-References - Book 24A...
+
+
+twitpic.com
+
+
+
+Home furnishings, kitchens, appliances, sofas, beds, mattresses - IKEA☑
+
+IKEA US and American Red Cross Partner. The IKEA partnership with American Red Cross contributes to providing safety and comfort to families in communities when disaster strikes.
+
+
+ikea.com/us/en/
+
+
+
+Prestolite - Leece Neville☑
+
+Prestolite Electric / Leece-Neville is a global manufacturer of alternators and starter motors selling into niche markets for heavy duty (truck, bus, emergency, off-road), marine, military and industrial applications. - Cross Reference.
+
+
+prestolite.com/pgs_products/xref_search.php
+
+
+
+Fortune☑
+
+Fortune » smart grid - Fortune.
+
+
+fortune.com
+
+
+
+Comprehensive modernization of electric grids...☑
+
+Today cross-subsidies in Russia's electric grid complex are estimated at 220 billion rubles with electricity tariffs for the population in the majority of the country's regions As the time goes by, other companies' expenditures, which are higher, are expected to align with those of the reference group.
+
+
+strategyjournal.ru/en/comprehensive-modernization-electric-g...
+
+
+
+Patent US5191259 - ...apparatus with first, second and third grid...☑
+
+Accordingly, a cross-talk in which the electron beams impinge upon the adjacent phosphor layer 13G or 13B does not occur. Since the third grid G3 is provided, the anode electric field can be prevented from entering the spacing 19 between the divided second grids Referenced by. Citing Patent. Filing date.
+
+
+google.com.ua/patents/US5191259
+
+
+
+Watch Battery Cross Reference | Chart Guide☑
+
+Battery Size Cross Reference / Equivalent Chart. The watch battery cross reference chart is easy to use. Find the brand of your battery, than follow it down your battery model.
+
+
+batteriesinaflash.com/info/watch-battery-cross-reference
+
+
+
+Electric Power | Department of Energy | What is the Smart Grid?☑
+
+Electric Power. From incandescent bulbs to fluorescents to LEDs, learn more about the long history of the light bulb. Learn about synchrophasors and how they are helping grid operators keep power flowing reliably to American homes and businesses.
+
+
+energy.gov/science-innovation/electric-power
+
+
+
+IBM Research: Sample of 2012 patent innovation☑
+
+U.S. Patent #8,121,741: Intelligent monitoring of an electrical utility grid - This patent describes a method that uses sensors and intelligent electricity meters to remotely monitor, manage and adjust power usage across an electric grid.
+
+
+research.ibm.com/articles/2012-patents.shtml
+
+
+
+cross reference defintion - ExpertGlossary☑
+
+"cross reference." Glossary of Patent Terms. Robert M. Hunter, Ph.D.. 17 March. Grid Computing. x 280. Lotus Domino.
+
+
+expertglossary.com/definition/cross-reference
+
+
+
+US Electric Grid Under Persistent Cyber Attack | Bit9 + Carbon Black...☑
+
+A recent report by Reps. Edward Markey (D-Mass.) and Henry Waxman (D-Calif.) referenced more than a Even though North American Electric Reliability Corporation (NERC) compliance standards forbid Premera Blue Cross Breach Continues String of Attacks against Healthcare Organizations.
+
+
+blog.bit9.com/2013/05/30/us-electric-grid-under-persist...
+
+
+
+PDF Grid-Powered Electric Transfer Crane☑
+
+Mitsubishi Heavy Industries Technical Review Vol. 47 No. 2 (June 2010) 15 Grid-Powered Electric Transfer Crane KANJI OBATA*1 TOSHIHIKO SAKAMOTO*2 NOBUO The traveling acceleration is measured and used to correct the torque reference value to cope with fluctuations in the cable tension.
+
+
+mhi-global.com/company/technology/review/pdf/e472/e47201...
+
+
+
+users6.nofeehost.com☑
+
+Bearing Cross Reference Fafnir.
+
+
+users6.nofeehost.com
+
+
+
+Ireland Grid Reference☑
+
+Left-click on the map to show the Grid Reference This website is valid for the Island of Ireland only, nowhere else Northern Ireland and the Republic of Ireland use the same Grid Reference system Double-click to zoom & centre Mouse-wheel-zoom and...
+
+
+gridreference.ie
+
+
+
+Unity - Scripting API☑
+
+ClampMagnitude. Returns a copy of vector with its magnitude clamped to maxLength. Cross. Cross Product of two vectors. Distance.
+
+
+docs.unity3d.com/ScriptReference/Vector3.html
+
+
+
+Explore the World of Calvin Klein☑
+
+Brown And Gold Patent Leather Belt.
+
+
+explore.calvinklein.com
+
+
+
+The Japan Times - News on Japan, Business News, Opinion, Sports...☑
+
+Business. Asia Pacific. Reference. Columns. Multimedia.
+
+
+search.japantimes.co.jp
+
+
+
+Electric motors cross reference☑
+
+Electric motors cross reference. ©2015 Nidec Motor Corporation. Electric motors & spec. Mar 8, 2015. This Competitor Cross-Reference is intended to be used as a general reference tool for comparison of Baldor's products with other .
+
+
+donerderyasi.com/en/Ku0
+
+
+
+Account Suspended☑
+
+corner electric fireplace entertainment center.
+
+
+aulafeelfree.com
+
+
+
+Rite in the Rain - Products☑
+
+Metric Grid. Level. Transit. Environmental. Geological. Cross Section.
+
+
+riteintherain.com/shop-products
+
+
+
+Apple Inc.☑
+
+Black&White Reference.
+
+
+apple.com
+
+
+
+Hide Referrer | link to other sites anonymously! - Anonym surfing...☑
+
+Vacuum Cleaner Belt Cross Reference.
+
+
+nullrefer.com
+
+
+
+Military.com☑
+
+Army Extends Global Information Grid.
+
+
+military.com
+
+
+
+Electric cars to become mini power plants in California's energy grid☑
+
+The project is expected to end in late 2015, with the planners hoping to glean valuable information on electric vehicle-grid integration and grid energy distribution. This grid-to-vehicle relationship is seen as a key factor in planning a more distributed energy grid...
+
+
+gizmag.com/electric-cars-california-power-plants/36779/
+
+
+
+
+
+
+Information, Magnetek Electric Motors Cross Reference☑
+
+Product Cross Reference (A Link to AO Smith's website) if the. Carrier Electric Motor 3 HP 1725 RPM 208-230/460V # H980 Cross Reference: HD60FK651, Magnetek 176500 Competitor Cross Reference.
+
+
+cijasole.tumblr.com/magnetek-electric-motors-cross-reference
+
+
+
+PDF Kunel Patent☑
+
+...turns and the conductor cross section are appropriate as in the circuit breaker coil on the core, without. 7/11/2002 KUNEL PATENT Page 5 of 9 Fig.4 shows an realization according to invention with an u 19 can be supplied e.g. with alternating current 23 from the power -grid or from the electric circuit.
+
+
+intalek.com/Index/Projects/Patents/DE3024814.pdf
+
+
+
+acnescarcreamreviews.com☑
+
+Reference - [전시관 탐방기] 과천 과학관.
+
+
+acnescarcreamreviews.com
+
+
+
+Home Page - Online Documentation - Developer Express Inc.☑
+
+Vertical Grid. Layout Manager. Tile Control. HTML/JS Controls. Windows 8 XAML Controls. Cross-Platform. Reporting. Document Server.
+
+
+documentation.devexpress.com
+
+
+
+Baldwin Filters E-Catalog☑
+
+Cross-Reference. Check Applications Catalog to Verify Cross-Reference.
+
+
+catalog.baldwinfilter.com
+
+
+
+Website Design Middlesbrough | Website Design Darlington...☑
+
+patent pending.
+
+
+media-burst.com
+
+
+
+Home | ArenaBG.ch☑
+
+RaceDriver GRID Patch 1.2[Cracked] -.
+
+
+arenabg.ch
+
+
+
+Urban Dictionary☑
+
+Electric Soup.
+
+
+urbandictionary.com
+
+
+
+Gadget Review.com☑
+
+Gadget Review » GRID.
+
+
+gadgetreview.com
+
+
+
+Patent US3022480 - Sandwich circuit strips - Google Patents☑
+
+reproduced from said grid pattern, each conducting line in said grid pattern being duplicated by one 8, 1907 Merk Dec. 12, 1933 (Other references on following page) 7 UNITED STATES PATENTS 2,481,951 Lavarack Mar. Int Standard Electric Corp. Electrical connecting element. US3621338 *.
+
+
+google.co.ug/patents/US3022480
+
+
+
+Error☑
+
+Part Number/ Keyword Cross Reference. Home. Products. Energy and Smart Grid. Healthcare and Wellness. Home Appliances and Power Tools.
+
+
+st.com/web/en/press/n3418
+
+
+
+Gizmodo☑
+
+Technology blog focused on gadgets.
+
+
+gizmodo.com
+
+
+
+Auto Belt Cross Reference. Gates Napa Dayco Auto Belt Cross...☑
+
+Save Money by cross referencing Gates, Napa, and dayco auto belts. We stock a huge inventory of high quality, low cost replacement belts for your Auto. Auto Belt Manufacturer Cross Reference.
+
+
+autobeltsonline.com/autobeltcrossreference.html
+
+
+
+Cross Reference; what is it, how does it work, why would I need it?☑
+
+Now, you can achieve Cross Reference matching with a dedicated component which creates combinations of items. You can find the [Cross Reference] component in the Sets.List panel.
+
+
+grasshopper3d.com/forum/topics/cross-reference-what-is-it-h...
+
+
+
+savefile-as.com☑
+
+Building A Sencha Touch Application Ext Js Grid.
+
+
+savefile-as.com
+
+
+
+Product Search and Results☑
+
+Smart Grid. Splicing and Testing. Underwater and Subsea. Catalogs. Quick Reference Guides. Bronze Parallel, Cross and Bar Taps. Solution. Industry. Electric Utility. Aluminum Universal Angle Bus Conductor (UABC).
+
+
+aflglobal.com/Product-Search.aspx
+
+
+
+Contact Support☑
+
+Marts » Reference.
+
+
+hmmarts.com
+
+
+
+Free Family History and Genealogy Records — FamilySearch.org☑
+
+· Land and property records (land grants, patents, deeds, bounty lands, etc.)
+
+
+familysearch.org
+
+
+
+...Guide - Braun > Braun Shaver Cross Reference Guide at Electric...☑
+
+Electric Shaver Recycling. Braun Shaver Cross Reference.
+
+
+electricshaverstore.com/d/190/braun-shaver-cross-reference-guide.htm
+
+
+
+Nikola Tesla's "System of Electric Lighting"☑
+
+Tesla Patents TOC. Next Patent. System of electric lighting. SPECIFICATION forming part of Letters Patent No. 454,622 have invented certain new and useful Improvements in Methods of and Apparatus for Electric Lighting, of which the following is a specification, reference being had to.
+
+
+tfcbooks.com/patents/0454622.htm
+
+
+
+flurid - A cross-browser, fluid width CSS grid framework that doesn'...☑
+
+Remove references to jQuery.flurid; use dist version of flurid. Flurid is a cross-browser fluid width grid system optimized for flexibility (fluidity) and one of the only fluid width grid systems to work in Internet Explorer versions 5.0 and newer1 without hiding pixels in margins.
+
+
+github.com/kflorence/flurid
+
+
+
+U.S. Patent 514,972 - Electric Railway System | Tesla Universe☑
+
+Tesla patent 514,972 electric-railway system. SPECIFICATION forming part of Letters Patent No. 514,972, dated February 20, 1894. The details of the invention, and the best manner I am aware of in which it is or may be carried out, I shall explain by reference to the accompanying drawings.
+
+
+teslauniverse.com/nikola-tesla/patents/us-patent-514972-ele...
+
+
+
+Electric power transmission - Engineering☑
+
+A transmission grid is a network of power stations, transmission circuits, and substations. References. Grigsby, L. L., et al. The Electric Power Engineering Handbook. Westinghouse Electric Corporation, "Electric power transmission patents; Tesla polyphase system".
+
+
+engineering.wikia.com/wiki/Electric_power_transmission
+
+
+
+GISuser The GIS and mapping professional resource☑
+
+GeoDigital to Partner with PPL Electric Utilities to Better Manage Vegetation for Increased Reliability. A.T. Kearney Global Cities 2015 Identifies 16 Elite Cities Based on Their Current Performance and Future Potential.
+
+
+gisuser.com
+
+
+
+Crosshatch grid☑
+
+Crosshatch grid, commonly referred to as Ciselé, 1964 - 1993. Pattern. Cross-hatch square grid made of vertical and horizontal A patent for the design as applied to a writing instrument was filed on June 5, 1964 and finally granted on September 27, 1966. Chrome ring omitted the reference zero mark.
+
+
+parker75.addr.com/Reference/Cisele/Crosshatch_grid.htm
+
+
+
+Who to Ask for a Reference☑
+
+Who to Ask for a Reference. That's why it's important to have a list of professional references, in addition to employment references, that you can provide to employers. Patent Info.
+
+
+jobsearch.about.com/od/gettingreferences/qt/who-to-ask-refere...
+
+
+
+Message to Microsoft: Fix Word's cross-reference dialog box. Please.☑
+
+The next cross-reference is a Figure, so I select Figure as my Reference type, then Heading number (no context) as my Insert preference, then I select the figure. Word: Show table grid lines. Word: Use the Organizer to copy macros, styles from one document to another.
+
+
+cybertext.wordpress.com/2010/08/16/message-to-microsoft-fix-words...
+
+
+
+Electric power transmission - wikipedia@pedia | Grids for railways☑
+
+Electric power transmissionIt has been suggested that Grid connection be merged into this article or section. (2) Use HVDC for the three thousand miles of cross country transmission. Westinghouse Electric Corporation, "Electric power transmission patents; Tesla polyphase system".
+
+
+wikipedia.atpedia.com/en/articles/p/o/w/Power_grid.html
+
+
+
+Technology and Science News - ABC News☑
+
+electric keyboard prices.
+
+
+abcnews.go.com/gma/green
+
+
+
+Oil filter cross reference☑
+
+The Oil Filter Cross references are for general reference only. Check for correct application and spec/measurements. Any use of this cross reference is done at the installers risk.
+
+
+oilfilter-crossreference.com
+
+
+
+Electric Utilities & IPP's - Fuel Cell Energy | Reference Site☑
+
+Distributed generation reinforces the reliability and security of the electric grid by dispersing power generation assets throughout a service area. Reference Site. 11.2 MW Fuel Cell Park, Daegu City, South Korea.
+
+
+fuelcellenergy.com/applications/clean-natural-gas/grid-power...
+
+
+
+PDF Nvidia grid K1 graphics board☑
+
+X X X X X X X X X X X X x X X X X X X X X X NVIDIA GRID K1 Graphics Board BD-06633-001_v02 | 12 Notice ALL NVIDIA DESIGN SPECIFICATIONS, REFERENCE BOARDS, FILES, DRAWINGS No license is granted by implication of otherwise under any patent rights of NVIDIA Corporation.
+
+
+nvidia.com/content/grid/pdf/GRID_K1_BD-06633-001_v02...
+
+
+
+Grid definition, a grating of crossed bars; gridiron. See more.☑
+
+a grating of crossed bars; gridiron. 2. Electricity. a metallic framework employed in a storage cell or battery for conducting the electric current and supporting the active material. Surveying. a basic system of reference lines for a region, consisting of straight lines intersecting at right angles.
+
+
+dictionary.reference.com/browse/grid
+
+
+
+Fan Cross Reference Tool - heat sinks☑
+
+• Renewables. • Smart Grids. Telecom. • Networking. • Electric & Hybrid Vehicles. Fan Cross Reference Tool. Find an Aavid fan that corresponds with a fan from manufacturers like
+
+
+aavid.com/product-group/thermal-fans/cross-reference
+
+
+
+Trains to Paris, Brussels, Disneyland | Deals to Europe - Eurostar☑
+
+Booking reference. Traveller's surname. Timetables.
+
+
+eurostar.com/uk-en
+
+
+
+The World Factbook☑
+
+D: cross-reference list of country data codes. F: cross-reference list of geographic names. G: weights and measures. FAQs.
+
+
+cia.gov/library/publications/the-world-factbook/f...
+
+
+
+Thesaurus.com☑
+
+Online version of Roget's II: The New Thesaurus, 3rd edition.
+
+
+thesaurus.com
+
+
+
+PDF Cross-reference guide cordless phone batteries☑
+
+NLA: No Longer Available NYA: Not Yet Available NR: No Replacement EMPIRE CORDLESS BATTERY CROSS- REFERENCE 4 Connectors...
+
+
+batterysolutionsinc.com/batterycrossreference/Cordless-Phone-Batt...
+
+
+
+PDF Electric Power Industry Needs for Grid-Scale Storage Applications☑
+
+...and Initiatives for Widespread Storage Adoption Revolutionizing the Electric Grid References Workshop Report Contributors 1 5 7 15 23 27 31. The lack of testing protocols and simulation models prevents cross comparison and more accurate performance specifications regarding energy efficiency...
+
+
+energy.tms.org/docs/pdfs/Electric_Power_Industry_Needs_2...
+
+
+
+godunov.com/bucky/patents-fulltext/05319518☑
+
+XCL Cross Reference to U.S. Classification: 29 25.42. UREF U.S. Patent Reference PNO Patent Number: 3562629 ISD Issue Date: 19710200 NAM Patentee Name: Troubetzkoi OCL Original U.S. Classification: 361326.
+
+
+godunov.com/bucky/patents-fulltext/05319518
+
+
+
+Grid | References☑
+
+grid. A simple guide to responsive design. Made by Adam Kaplan. Add the Viewport Meta Tag. Place in the <head> of your HTML. This enables use of media queries for cross-device layouts. CSS Box Model.
+
+
+adamkaplan.me/grid/
+
+
+
+Cash acme relief valve cross reference | Älvsbyhus Norge☑
+
+2015 fittings consist cash acme relief valve cross reference home improvement loans high ltv of search. Patent references: pagers, small phones… raids was acme f-82. Actual lifetime. sets; spray pistols; air consists. Operated relief electric, bep, del city, gardner bender marinco.
+
+
+alvsbyhus.no/cash-acme-relief-valve-cross-reference/
+
+
+
+Wired Magazine☑
+
+WIRED » Augmented Reality: "Grid" by Sahar Fikouhi.
+
+
+wired.com
+
+
+
+reference grid☑
+
+Grid reference — A typical map displaying grid reference Grid references define locations on maps using Cartesian coordinates. grid — i. The system of two sets of parallel lines uniformly spaced and crossing at 90° to each other to form a pattern of squares.
+
+
+useful_english.enacademic.com/110639/reference_grid
+
+
+
+Motor Cross Reference - Johnstone Supply 77 Web - Frompo☑
+
+Motor Cross-Reference Database. ... please use our Motor Replacement Form. ... Call us for ALL your electric motor parts and repair needs. Nidec Motor Corporation trademarks followed by the ® symbol are registered with the U.S. Patent and Trademark Office.
+
+
+kids.frompo.com/15c2451eaa425da5657706b0c78612b9
+
+
+
+Получайте и отправляйте онлайн-платежи быстро и просто...☑
+
+Please reference the PayPal website.
+
+
+paypal.com
+
+
+
+How Electricity Works - HowStuffWorks☑
+
+Sure, you can flee from the world of crisscrossing power lines and live your life completely off the grid, but even at the loneliest corners of the world, electricity exists. Electric Motors.
+
+
+science.howstuffworks.com/electricity.htm
+
+
+
+PDF For immediate release☑
+
+Go Electric's patented Blinkless® technology will ensure critical loads at Camp Smith never have a power disruption." "Tony Soverns, Alex Creviston and I are delighted to participate in the SPIDERS micro grid project and to have a...
+
+
+ener1.com/wp-content/uploads/2014/01/GoElectric-SPI...
+
+
+
+Denmark to power electric cars by wind in vehicle-to-grid experiment☑
+
+The project on the holiday island of Bornholm will use the batteries of parked electric cars to store excess energy when the wind blows hard, and then feed electricity back into the grid when the weather is calm.
+
+
+theguardian.com/environment/2009/jun/19/denmark-wind-elec...
+
+
+
+
+
+
+
+   
+ 
+
+
+ 
+ 
+   
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
+   
+   
+
+
+
+
+   
+
+
+
+
+
+
+   
+ 
+
+
+ 
+ 
+   
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+ 
+
+ 
+ 
+
