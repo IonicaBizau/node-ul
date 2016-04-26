@@ -1,6 +1,6 @@
 {
   "name": "ul",
-  "version": "5.2.1",
+  "version": "5.2.2",
   "description": "A minimalist utility library.",
   "main": "lib/index.js",
   "scripts": {
@@ -32,5 +32,16 @@
   "devDependencies": {
     "mocha": "^2.2.5",
     "is-there": "^4.0.0"
-  }
+  },
+  "files": [
+    "bin/",
+    "app/",
+    "lib/",
+    "dist/",
+    "src/",
+    "resources/",
+    "menu/",
+    "cli.js",
+    "index.js"
+  ]
 }
