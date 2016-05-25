@@ -1,5 +1,7 @@
 
-# ul [![PayPal](https://img.shields.io/badge/%24-paypal-f39c12.svg)][paypal-donations] [![Travis](https://img.shields.io/travis/IonicaBizau/node-ul.svg)](https://travis-ci.org/IonicaBizau/node-ul/) [![Version](https://img.shields.io/npm/v/ul.svg)](https://www.npmjs.com/package/ul) [![Downloads](https://img.shields.io/npm/dt/ul.svg)](https://www.npmjs.com/package/ul) [![Get help on Codementor](https://cdn.codementor.io/badges/get_help_github.svg)](https://www.codementor.io/johnnyb?utm_source=github&utm_medium=button&utm_term=johnnyb&utm_campaign=github)
+# ul
+
+ [![PayPal](https://img.shields.io/badge/%24-paypal-f39c12.svg)][paypal-donations] [![AMA](https://img.shields.io/badge/ask%20me-anything-1abc9c.svg)](https://github.com/IonicaBizau/ama) [![Travis](https://img.shields.io/travis/IonicaBizau/node-ul.svg)](https://travis-ci.org/IonicaBizau/node-ul/) [![Version](https://img.shields.io/npm/v/ul.svg)](https://www.npmjs.com/package/ul) [![Downloads](https://img.shields.io/npm/dt/ul.svg)](https://www.npmjs.com/package/ul) [![Get help on Codementor](https://cdn.codementor.io/badges/get_help_github.svg)](https://www.codementor.io/johnnyb?utm_source=github&utm_medium=button&utm_term=johnnyb&utm_campaign=github)
 
 > A minimalist utility library.
 
@@ -136,6 +138,7 @@ If you are using this library in one of your projects, add it in this list. :spa
  - [`engine-tools`](https://github.com/jillix/engine-tools) (by jillix)—Engine Tools library and CLI app.
  - [`enny`](https://github.com/IonicaBizau/enny) (by jillix)—Generate Engine compositions from human-readable inputs.
  - [`flow-api`](https://github.com/jillix/flow-api) (by jillix)—The flow api library and CLI app.
+ - [`fortran`](https://github.com/IonicaBizau/node-fortran)—Fortran bridge for Node.js which allows you to run Fortran code from Node.js.
  - [`fwatcher`](https://github.com/IonicaBizau/node-fwatcher)—Watch files for changes.
  - [`gh-contributions`](https://github.com/IonicaBizau/github-contributions)—A tool that generates a repository which being pushed into your GitHub account creates a nice contributions calendar.
  - [`gh.js`](https://github.com/IonicaBizau/gh.js)—Tiny GitHub API wrapper for server and client.
@@ -167,6 +170,7 @@ If you are using this library in one of your projects, add it in this list. :spa
  - [`phantom-jquery`](https://github.com/IonicaBizau/phantom-jquery#readme)—Access DOM elements using jQuery in PhantomJS.
  - [`regarde`](https://github.com/IonicaBizau/regarde)—A tiny tool and library to watch commands.
  - [`share-term`](https://github.com/Share-Term/share-term#readme)—Share the terminal with your friends.
+ - [`ship-release`](https://github.com/IonicaBizau/ship-release#readme)—Publish new versions on GitHub and npm with ease.
  - [`statique`](https://github.com/IonicaBizau/statique)—A Node.JS static server module with built-in cache options and route features.
  - [`streamp`](https://github.com/IonicaBizau/node-streamp)—mkdir -p combined with streams.
  - [`template-html`](https://github.com/grit96/template-html#readme) (by Geraint White)—Generate static HTML files from templates and content files
