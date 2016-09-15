@@ -14,6 +14,8 @@ var obj = {
   , tmp = null
   ;
 
+debugger
+
 // Merge the two objects and store the result in tmp
 console.log(tmp = Ul.deepMerge(obj, def));
 // => { n: null, v: 1, a: 20 }
@@ -37,5 +39,5 @@ console.log(Ul.merge({
         bar: 1
       , baz: 7
     }
-});
+}));
 // => { { bar: 42 } }
