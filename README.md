@@ -33,6 +33,8 @@ var obj = {
   , tmp = null
   ;
 
+debugger
+
 // Merge the two objects and store the result in tmp
 console.log(tmp = Ul.deepMerge(obj, def));
 // => { n: null, v: 1, a: 20 }
@@ -56,7 +58,7 @@ console.log(Ul.merge({
         bar: 1
       , baz: 7
     }
-});
+}));
 // => { { bar: 42 } }
 ```
 
@@ -106,6 +108,7 @@ Have an idea? Found a bug? See [how to contribute][contributing].
 If you are using this library in one of your projects, add it in this list. :sparkles:
 
 
+ - [`3abn`](https://github.com/IonicaBizau/3abn#readme)—A 3ABN radio client in the terminal.
  - [`abs`](https://github.com/IonicaBizau/abs)—A library to convert a path into an absolute path.
  - [`ansy`](https://github.com/IonicaBizau/ansy#readme)—Cross platform ANSI colors made easy.
  - [`ascii-heart`](https://github.com/nuvipannu/ascii-heart#readme) (by Nuvi Pannu)—Create ASCII hearts using Node.js.
@@ -116,6 +119,7 @@ If you are using this library in one of your projects, add it in this list. :spa
  - [`birthday`](https://github.com/IonicaBizau/birthday)—Know when a friend's birthday is coming.
  - [`blah`](https://github.com/IonicaBizau/blah)—A command line tool to optimize the repetitive actions.
  - [`bloggify`](https://github.com/Bloggify/bloggify-tools)—A set of tools for Bloggify administration.
+ - [`bloggify-markdown-adapter`](https://github.com/IonicaBizau/bloggify-markdown-adapter#readme)—Markdown adapter for Bloggify.
  - [`bloggify-social`](https://github.com/Bloggify/social)—A Bloggify plugin for sharing articles on social networks.
  - [`bnotify`](https://github.com/IonicaBizau/bnotify)—A notification system written in NodeJS using the BAT platform.
  - [`cdnjs-importer`](https://github.com/cdnjs/cdnjs-importer)—Easy way to import a library into CDNJS.
@@ -141,6 +145,7 @@ If you are using this library in one of your projects, add it in this list. :spa
  - [`fortran`](https://github.com/IonicaBizau/node-fortran)—Fortran bridge for Node.js which allows you to run Fortran code from Node.js.
  - [`fwatcher`](https://github.com/IonicaBizau/node-fwatcher)—Watch files for changes.
  - [`gh-contributions`](https://github.com/IonicaBizau/github-contributions)—A tool that generates a repository which being pushed into your GitHub account creates a nice contributions calendar.
+ - [`gh-fork-source`](https://github.com/IonicaBizau/gh-fork-source#readme)—Get the source repository of a GitHub fork.
  - [`gh.js`](https://github.com/IonicaBizau/gh.js)—Tiny GitHub API wrapper for server and client.
  - [`ghcal`](https://github.com/IonicaBizau/ghcal)—See the GitHub contributions calendar of a user in the command line.
  - [`ghosty`](https://github.com/IonicaBizau/ghosty#readme)—A wrapper around PhantomJS, downloading the Phantom binary.
@@ -157,8 +162,10 @@ If you are using this library in one of your projects, add it in this list. :spa
  - [`jsonrequest`](https://github.com/IonicaBizau/jsonrequest)—A tiny library for requesting and getting JSON resources.
  - [`le-table`](https://github.com/IonicaBizau/le-table)—Another NodeJS module for creating ASCII tables.
  - [`lien`](https://github.com/LienJS/Lien)—Another lightweight NodeJS framework. Lien is the link between request and response objects.
+ - [`made-in`](https://github.com/IonicaBizau/made-in#readme)—Get GitHub projects created by users from a specific location.
  - [`markdown-templator`](https://github.com/grit96/markdown-templator#readme) (by Geraint White)—Include markdown files in an HTML template
  - [`match`](https://github.com/IonicaBizau/match.js#readme)—Simplest way to create match memory games.
+ - [`mdify`](https://github.com/IonicaBizau/mdify#readme)—Markdown helpers with metadata support.
  - [`mongof`](https://github.com/IonicaBizau/node-mongof)—Sync MongoDB collections with JSON files.
  - [`nodeice`](https://github.com/IonicaBizau/nodeice)—Another PDF invoice generator
  - [`np-init`](https://github.com/IonicaBizau/np-init#readme)—Easily start a npm package from scratch.
@@ -174,10 +181,12 @@ If you are using this library in one of your projects, add it in this list. :spa
  - [`statique`](https://github.com/IonicaBizau/statique)—A Node.JS static server module with built-in cache options and route features.
  - [`streamp`](https://github.com/IonicaBizau/node-streamp)—mkdir -p combined with streams.
  - [`template-html`](https://github.com/grit96/template-html#readme) (by Geraint White)—Generate static HTML files from templates and content files
+ - [`tester-init`](https://github.com/IonicaBizau/tester-init#readme)—Init tests for tester.
  - [`tilda`](https://github.com/IonicaBizau/tilda)—Tiny module for building command line tools.
  - [`tinyreq`](https://github.com/IonicaBizau/tinyreq)—Tiny library for making http(s) requests.
  - [`tinyreq-cli`](https://github.com/IonicaBizau/tinyreq-cli#readme)—A cli tool for making http(s) requests. CLI for tinyreq.
  - [`tithe`](https://github.com/IonicaBizau/tithe)—Organize and track the tithe payments.
+ - [`transformer`](https://github.com/IonicaBizau/transformer#readme)—Transform data using synchronous and asynchronous functions.
  - [`web-term`](https://github.com/IonicaBizau/web-term)—A full screen terminal in your browser.
  - [`wrabbit`](https://github.com/jillix/wrabbit) (by jillix)—Wrap scripts by providing the wrapping function.
 
