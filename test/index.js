@@ -1,11 +1,12 @@
-// Dependencies
-var Ul = require("../lib")
-  , Assert = require("assert")
-  , IsThere = require("is-there")
-  ;
+"use strict";
+
+const ul = require("..")
+    , isThere = require("is-there")
+    , tester = require("tester")
+    ;
 
 // Input objects
-var obj = {
+let obj = {
         n: null
       , v: 1
     }
@@ -18,108 +19,105 @@ var obj = {
   , tmp = null
   ;
 
-// One level objects
-it("should merge one level objects", function (cb) {
-    tmp = Ul.deepMerge(obj, def);
-    Assert.deepEqual(tmp, {
-        n: null
-      , v: 1
-      , a: 20
+tester.describe("ul", t => {
+    // One level objects
+    t.should("merge one level objects", () => {
+        tmp = ul.deepMerge(obj, def);
+        t.expect(tmp).toEqual({
+            n: null
+          , v: 1
+          , a: 20
+        });
     });
-    cb();
-});
 
-// Clones
-it("should create object clones", function (cb) {
-    Assert.equal(tmp === Ul.clone(tmp), false);
-    cb();
-});
-
-// Home directory
-it("should get the correct path to the home directory", function (cb) {
-    Assert.equal(IsThere(Ul.home()), true);
-    Assert.equal(IsThere(Ul.HOME_DIR), true);
-    cb();
-});
-
-// Multiple objects merge
-it("should merge more than two objects", function (cb) {
-    Assert.deepEqual(Ul.deepMerge({}, obj, def, last), {
-        c: 1
-      , n: null
-      , v: 1
-      , a: 20
+    // Clones
+    t.should("create object clones", () => {
+        let clone = ul.clone(tmp);
+        t.expect(clone).toNotBe(tmp);
+        t.expect(clone).toEqual(tmp);
     });
-    cb();
-});
 
-// Deep merge
-it("should merge objects deeply", function (cb) {
-    Assert.deepEqual(Ul.deepMerge({
-        a: {
-            c: {}
-          , d: 3
-        }
-    }, {
-        a: {
-            d: undefined
-          , c: {
-                s: {}
-            }
-        }
-    }), {
-        a: {
-            c: {
-                s: {}
-            }
-          , d: 3
-        }
+    // Home directory
+    t.should("get the correct path to the home directory", () => {
+        t.expect(isThere(ul.home())).toBe(true);
+        t.expect(isThere(ul.HOME_DIR)).toBe(true);
     });
-    cb();
-});
 
-// Merge arrays
-it("should merge arrays", function (cb) {
-    Assert.deepEqual(Ul.deepMerge({
-        a: 4
-      , b: 1
-      , d: {
+    // Multiple objects merge
+    t.should("merge more than two objects", () => {
+        t.expect(ul.deepMerge({}, obj, def, last)).toEqual({
+            c: 1
+          , n: null
+          , v: 1
+          , a: 20
+        });
+    });
+
+    // Deep merge
+    t.should("merge objects deeply", () => {
+        t.expect(ul.deepMerge({
             a: {
-                b: [{ a: "foo" }]
+                c: {}
+              , d: 3
             }
-        }
-    }, {
-        b: 2
-      , c: 3
-      , d: {
-            a: { b: [] }
-        }
-    }), {
-        b: 1
-      , c: 3
-      , d: {
+        }, {
             a: {
-                b: [{ a: "foo" }]
+                d: undefined
+              , c: {
+                    s: {}
+                }
             }
-        }
-      , a: 4
+        })).toEqual({
+            a: {
+                c: {
+                    s: {}
+                }
+              , d: 3
+            }
+        });
     });
-    cb();
-});
 
-// One level merge
-it("should merge one level objects", function (cb) {
-    Assert.deepEqual(Ul.merge({
-        foo: {
-            bar: 42
-        }
-    }, {
-        foo: {
-            bar: 1
-          , baz: 7
-        }
-    }), {
-        foo: { bar: 42 }
+    // Merge arrays
+    t.should("merge arrays", () => {
+        t.expect(ul.deepMerge({
+            a: 4
+          , b: 1
+          , d: {
+                a: {
+                    b: [{ a: "foo" }]
+                }
+            }
+        }, {
+            b: 2
+          , c: 3
+          , d: {
+                a: { b: [] }
+            }
+        })).toEqual({
+            b: 1
+          , c: 3
+          , d: {
+                a: {
+                    b: [{ a: "foo" }]
+                }
+            }
+          , a: 4
+        });
     });
-    cb();
+
+    // One level merge
+    t.should("merge one level objects", () => {
+        t.expect(ul.merge({
+            foo: {
+                bar: 42
+            }
+        }, {
+            foo: {
+                bar: 1
+              , baz: 7
+            }
+        })).toEqual({
+            foo: { bar: 42 }
+        });
+    });
 });
