@@ -4,7 +4,7 @@
   "description": "A minimalist utility library.",
   "main": "lib/index.js",
   "scripts": {
-    "test": "mocha test"
+    "test": "node test"
   },
   "repository": {
     "type": "git",
@@ -27,12 +27,11 @@
   },
   "dependencies": {
     "deffy": "^2.0.0",
-    "tester": "^1.3.5",
     "typpy": "^2.0.0"
   },
   "devDependencies": {
-    "mocha": "^2.2.5",
-    "is-there": "^4.0.0"
+    "is-there": "^4.0.0",
+    "tester": "^1.3.5"
   },
   "files": [
     "bin/",
