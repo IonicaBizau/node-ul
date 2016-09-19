@@ -1,6 +1,6 @@
 {
   "name": "ul",
-  "version": "5.2.5",
+  "version": "5.2.6",
   "description": "A minimalist utility library.",
   "main": "lib/index.js",
   "scripts": {
@@ -26,11 +26,11 @@
     "test": "test"
   },
   "dependencies": {
-    "deffy": "^2.0.0",
-    "typpy": "^2.0.0"
+    "deffy": "^2.2.2",
+    "typpy": "^2.3.4"
   },
   "devDependencies": {
-    "is-there": "^4.0.0",
+    "is-there": "^4.3.3",
     "tester": "^1.3.5"
   },
   "files": [
