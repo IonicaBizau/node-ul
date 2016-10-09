@@ -121,6 +121,7 @@ If you are using this library in one of your projects, add it in this list. :spa
  - [`bloggify`](https://github.com/Bloggify/bloggify-tools)—A set of tools for Bloggify administration.
  - [`bloggify-markdown-adapter`](https://github.com/IonicaBizau/bloggify-markdown-adapter#readme)—Markdown adapter for Bloggify.
  - [`bloggify-social`](https://github.com/Bloggify/social)—A Bloggify plugin for sharing articles on social networks.
+ - [`bloggify-viewer`](https://github.com/IonicaBizau/bloggify-viewer#readme)—Connects the CRUD operations with the renderer.
  - [`bnotify`](https://github.com/IonicaBizau/bnotify)—A notification system written in NodeJS using the BAT platform.
  - [`cdnjs-importer`](https://github.com/cdnjs/cdnjs-importer)—Easy way to import a library into CDNJS.
  - [`class-methods`](https://github.com/IonicaBizau/class-methods#readme)—Get the methods of a JavaScript class.
@@ -183,6 +184,7 @@ If you are using this library in one of your projects, add it in this list. :spa
  - [`template-html`](https://github.com/grit96/template-html#readme) (by Geraint White)—Generate static HTML files from templates and content files
  - [`tester-init`](https://github.com/IonicaBizau/tester-init#readme)—Init tests for tester.
  - [`tilda`](https://github.com/IonicaBizau/tilda)—Tiny module for building command line tools.
+ - [`tilda-init`](https://github.com/IonicaBizau/tilda-init#readme)—Init cli applications.
  - [`tinyreq`](https://github.com/IonicaBizau/tinyreq)—Tiny library for making http(s) requests.
  - [`tinyreq-cli`](https://github.com/IonicaBizau/tinyreq-cli#readme)—A cli tool for making http(s) requests. CLI for tinyreq.
  - [`tithe`](https://github.com/IonicaBizau/tithe)—Organize and track the tithe payments.
