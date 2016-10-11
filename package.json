@@ -1,6 +1,6 @@
 {
   "name": "ul",
-  "version": "5.2.8",
+  "version": "5.2.9",
   "description": "A minimalist utility library.",
   "main": "lib/index.js",
   "scripts": {
@@ -37,6 +37,7 @@
     "bin/",
     "app/",
     "lib/",
+    "build/",
     "dist/",
     "src/",
     "resources/",
