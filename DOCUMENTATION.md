@@ -6,6 +6,7 @@ You can see below the API reference of this module.
 One level merge. Faster than `deepMerge`.
 
 #### Params
+
 - **** `dst`: {Object} The destination object.
 - **** `src`: {Object} The source object (usually defaults).
 
@@ -24,6 +25,7 @@ Usage: `Ul.deepMerge(obj1, obj2, obj3, obj4, ..., objN)`
 Deep clone of the provided item.
 
 #### Params
+
 - **Anything** `item`: The item that should be cloned
 
 #### Return
