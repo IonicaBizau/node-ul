@@ -1,6 +1,6 @@
 {
   "name": "ul",
-  "version": "5.2.12",
+  "version": "5.2.13",
   "description": "A minimalist utility library.",
   "main": "lib/index.js",
   "scripts": {
@@ -43,6 +43,9 @@
     "resources/",
     "menu/",
     "cli.js",
-    "index.js"
+    "index.js",
+    "bloggify.js",
+    "bloggify.json",
+    "bloggify/"
   ]
 }
