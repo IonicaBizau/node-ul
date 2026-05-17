@@ -2,7 +2,9 @@
   "name": "ul",
   "version": "5.2.16",
   "description": "A minimalist utility library.",
+  "type": "module",
   "main": "lib/index.js",
+  "exports": "./lib/index.js",
   "scripts": {
     "test": "node test"
   },

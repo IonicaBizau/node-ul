@@ -1,4 +1,4 @@
-const Ul = require("../lib")
+import Ul from "../lib/index.js";
 
 // Input data
 let obj = {

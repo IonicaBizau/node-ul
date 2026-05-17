@@ -1,9 +1,8 @@
 "use strict";
 
-const ul = require("..")
-    , isThere = require("is-there")
-    , tester = require("tester")
-    ;
+import ul from "../lib/index.js";
+import isThere from "is-there";
+import tester from "tester";
 
 // Input objects
 let obj = {

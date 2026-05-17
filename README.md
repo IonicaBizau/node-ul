@@ -74,7 +74,7 @@ yarn add ul
 
 
 ```js
-const Ul = require("ul")
+import Ul from "ul"
 
 // Input data
 let obj = {
