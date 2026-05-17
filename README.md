@@ -74,7 +74,7 @@ yarn add ul
 
 
 ```js
-import Ul from "ul"
+import Ul from "ul";
 
 // Input data
 let obj = {
@@ -126,28 +126,11 @@ console.log(Ul.merge({
 
 
 
-
-## :question: Get Help
-
-There are few ways to get help:
-
-
-
- 1. Please [post questions on Stack Overflow](https://stackoverflow.com/questions/ask). You can open issues with questions, as long you add a link to your Stack Overflow question.
- 2. For bug reports and feature requests, open issues. :bug:
- 3. For direct and quick help, you can [use Codementor](https://www.codementor.io/johnnyb). :rocket:
-
-
-
-
-
-
-
 ## :memo: Documentation
 
 
 ### `merge(dst, src)`
-One level merge. Faster than `deepMerge`.
+One-level merge. Faster than `deepMerge`.
 
 #### Params
 
@@ -158,7 +141,7 @@ One level merge. Faster than `deepMerge`.
 - **Object** The result object.
 
 ### `deepMerge()`
-Recursively merge the objects from arguments, returning a new object.
+Recursively merges the objects from the arguments, returning a new object.
 
 Usage: `Ul.deepMerge(obj1, obj2, obj3, obj4, ..., objN)`
 
@@ -166,7 +149,7 @@ Usage: `Ul.deepMerge(obj1, obj2, obj3, obj4, ..., objN)`
 - **Object** The merged objects.
 
 ### `clone(item)`
-Deep clone of the provided item.
+Creates a deep clone of the provided item.
 
 #### Params
 
@@ -176,11 +159,29 @@ Deep clone of the provided item.
 - **Anything** The cloned object
 
 ### `home()`
-Get the home directory path on any platform. The value can be
-accessed using `Ul.HOME_DIR` too.
+Gets the home directory path on any platform. The value can also be
+accessed using `Ul.HOME_DIR`.
 
 #### Return
 - **String** The home directory path.
+
+
+
+
+
+
+
+
+
+## :question: Get Help
+
+There are few ways to get help:
+
+
+
+ 1. Please [post questions on Stack Overflow](https://stackoverflow.com/questions/ask). You can open issues with questions, as long you add a link to your Stack Overflow question.
+ 2. For bug reports and feature requests, open issues. :bug:
+ 3. For direct and quick help, you can [use Codementor](https://www.codementor.io/johnnyb). :rocket:
 
 
 
@@ -229,121 +230,6 @@ Thanks! :heart:
 
 
 
-
-
-
-## :dizzy: Where is this library used?
-If you are using this library in one of your projects, add it in this list. :sparkles:
-
- - `3abn`
- - `@isysd/gpm`
- - `abs`
- - `angularvezba`
- - `ansy`
- - `ascii-heart`
- - `asciify-pixel`
- - `asciify-pixel-matrix`
- - `bible`
- - `bible.js`
- - `birthday`
- - `blah`
- - `bloggify`
- - `bloggify-cli`
- - `bloggify-config`
- - `bloggify-markdown-adapter`
- - `bloggify-mongoose`
- - `bloggify-paths`
- - `bloggify-plugin-class`
- - `bloggify-sequelize`
- - `bloggify-sequelize-adapter`
- - `bloggify-social`
- - `bloggify-sql-adapter`
- - `bloggify-template-renderer`
- - `bloggify-theme-renderer`
- - `bloggify-tools`
- - `bloggify-viewer`
- - `bnotify`
- - `cdnjs-importer`
- - `class-methods`
- - `cli-box`
- - `cli-circle`
- - `cli-gh-cal`
- - `cli-graph`
- - `cli-pie`
- - `cli-snow`
- - `cobol`
- - `compute-size`
- - `diable`
- - `donate.js`
- - `elasticfire`
- - `electronify`
- - `emoji-logger`
- - `engine-builder`
- - `engine-flow-types`
- - `engine-parser`
- - `engine-tools`
- - `enny`
- - `flow-api`
- - `fortran`
- - `function-data-converter`
- - `fwatcher`
- - `gh-contributions`
- - `gh-fork-source`
- - `gh.js`
- - `ghcal`
- - `ghoos`
- - `ghosty`
- - `git-cloner`
- - `git-stats`
- - `git-stats-importer`
- - `github-colors`
- - `github-stats`
- - `gry`
- - `idea`
- - `image-to-ascii`
- - `img-ssim`
- - `img-to-ascii`
- - `jipics`
- - `jsonrequest`
- - `le-table`
- - `lien`
- - `made-in`
- - `markdown-templator`
- - `markdown-templator-fork`
- - `markdownalint-cli2`
- - `match`
- - `mdify`
- - `mongof`
- - `nodeice`
- - `np-init`
- - `npm-template-html`
- - `npmreserve`
- - `oargv`
- - `packy`
- - `page-changed`
- - `parent-search`
- - `parrot-bot`
- - `phantom-jquery`
- - `promptify`
- - `regarde`
- - `rucksack`
- - `share-term`
- - `ship-release`
- - `statique`
- - `streamp`
- - `striking-clock`
- - `template-html`
- - `tester-init`
- - `tilda`
- - `tilda-init`
- - `tiny-json-request`
- - `tinyreq`
- - `tinyreq-cli`
- - `tithe`
- - `tools_may_24`
- - `transformer`
- - `web-term`
- - `wrabbit`
 
 
 

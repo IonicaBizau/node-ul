@@ -3,7 +3,7 @@
 You can see below the API reference of this module.
 
 ### `merge(dst, src)`
-One level merge. Faster than `deepMerge`.
+One-level merge. Faster than `deepMerge`.
 
 #### Params
 
@@ -14,7 +14,7 @@ One level merge. Faster than `deepMerge`.
 - **Object** The result object.
 
 ### `deepMerge()`
-Recursively merge the objects from arguments, returning a new object.
+Recursively merges the objects from the arguments, returning a new object.
 
 Usage: `Ul.deepMerge(obj1, obj2, obj3, obj4, ..., objN)`
 
@@ -22,7 +22,7 @@ Usage: `Ul.deepMerge(obj1, obj2, obj3, obj4, ..., objN)`
 - **Object** The merged objects.
 
 ### `clone(item)`
-Deep clone of the provided item.
+Creates a deep clone of the provided item.
 
 #### Params
 
@@ -32,8 +32,8 @@ Deep clone of the provided item.
 - **Anything** The cloned object
 
 ### `home()`
-Get the home directory path on any platform. The value can be
-accessed using `Ul.HOME_DIR` too.
+Gets the home directory path on any platform. The value can also be
+accessed using `Ul.HOME_DIR`.
 
 #### Return
 - **String** The home directory path.
