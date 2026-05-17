@@ -2,28 +2,29 @@ import Ul from "../lib/index.js";
 
 // Input data
 let obj = {
-       n: null
-      , v: 1
-    }
-  , def = {
-        n: 1
-      , v: 10
-      , a: 20
-    }
-  , tmp = null
+    n: null,
+    v: 1
+};
 
+let def = {
+    n: 1,
+    v: 10,
+    a: 20
+};
+
+let tmp;
 
 // Merge the two objects and store the result in tmp
-console.log(tmp = Ul.deepMerge(obj, def))
+console.log(tmp = Ul.deepMerge(obj, def));
 // => { n: null, v: 1, a: 20 }
 
 // Clone the tmp object -- the clone will have a
 // different reference
-console.log(tmp === Ul.clone(tmp))
+console.log(tmp === Ul.clone(tmp));
 // => false
 
 // Show the absolute path to the home directory
-console.log(Ul.home()) // or `console.log(Ul.HOME_DIR)`
+console.log(Ul.home()); // or `console.log(Ul.HOME_DIR)`
 // => /home/ionicabizau
 
 // One level merge
@@ -33,8 +34,8 @@ console.log(Ul.merge({
     }
 }, {
     foo: {
-        bar: 1
-      , baz: 7
+        bar: 1,
+        baz: 7
     }
-}))
+}));
 // => { { bar: 42 } }
