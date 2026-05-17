@@ -78,28 +78,29 @@ import Ul from "ul";
 
 // Input data
 let obj = {
-       n: null
-      , v: 1
-    }
-  , def = {
-        n: 1
-      , v: 10
-      , a: 20
-    }
-  , tmp = null
+    n: null,
+    v: 1
+};
 
+let def = {
+    n: 1,
+    v: 10,
+    a: 20
+};
+
+let tmp;
 
 // Merge the two objects and store the result in tmp
-console.log(tmp = Ul.deepMerge(obj, def))
+console.log(tmp = Ul.deepMerge(obj, def));
 // => { n: null, v: 1, a: 20 }
 
 // Clone the tmp object -- the clone will have a
 // different reference
-console.log(tmp === Ul.clone(tmp))
+console.log(tmp === Ul.clone(tmp));
 // => false
 
 // Show the absolute path to the home directory
-console.log(Ul.home()) // or `console.log(Ul.HOME_DIR)`
+console.log(Ul.home()); // or `console.log(Ul.HOME_DIR)`
 // => /home/ionicabizau
 
 // One level merge
@@ -109,10 +110,10 @@ console.log(Ul.merge({
     }
 }, {
     foo: {
-        bar: 1
-      , baz: 7
+        bar: 1,
+        baz: 7
     }
-}))
+}));
 // => { { bar: 42 } }
 ```
 
@@ -134,11 +135,11 @@ One-level merge. Faster than `deepMerge`.
 
 #### Params
 
-- **** `dst`: {Object} The destination object.
-- **** `src`: {Object} The source object (usually defaults).
+- **object** `dst`: The destination object.
+- **object** `src`: The source object (usually defaults).
 
 #### Return
-- **Object** The result object.
+- **object** The result object.
 
 ### `deepMerge()`
 Recursively merges the objects from the arguments, returning a new object.
@@ -146,24 +147,24 @@ Recursively merges the objects from the arguments, returning a new object.
 Usage: `Ul.deepMerge(obj1, obj2, obj3, obj4, ..., objN)`
 
 #### Return
-- **Object** The merged objects.
+- **object** The merged objects.
 
 ### `clone(item)`
 Creates a deep clone of the provided item.
 
 #### Params
 
-- **Anything** `item`: The item that should be cloned
+- **object|Array** `item`: The item that should be cloned
 
 #### Return
-- **Anything** The cloned object
+- **object|Array** The cloned object
 
 ### `home()`
 Gets the home directory path on any platform. The value can also be
 accessed using `Ul.HOME_DIR`.
 
 #### Return
-- **String** The home directory path.
+- **string** The home directory path.
 
 
 
